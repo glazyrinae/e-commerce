@@ -14,7 +14,7 @@
                     class="form-control" 
                     id="{{user_form.username.name}}" 
                     name="{{user_form.username.name}}" 
-                    value="{{user_form.username.value}}"/>
+                    value="{{user_form.username.value |default_if_none:''}}"/>
             </div>
             {% if user_form.username.errors %}
                 {{ user_form.username.errors }}
@@ -29,7 +29,7 @@
                     class="form-control" 
                     id="{{user_form.first_name.name}}"  
                     name="{{user_form.first_name.name}}"
-                    value="{{user_form.first_name.value}}" />
+                    value="{{user_form.first_name.value|default_if_none:''}}" />
             </div>
             {% if user_form.first_name.errors %}
                 {{ user_form.first_name.errors }}
@@ -44,7 +44,7 @@
                     class="form-control" 
                     id="{{user_form.email.name}}"  
                     name="{{user_form.email.name}}"
-                    value="{{user_form.email.value}}" />
+                    value="{{user_form.email.value|default_if_none:''}}" />
             </div>
             {% if user_form.email.errors %}
                 {{ user_form.email.errors }}
@@ -59,7 +59,7 @@
                     class="form-control" 
                     id="{{user_form.password.name}}"  
                     name="{{user_form.password.name}}"
-                    value="{{user_form.password.value}}" />
+                    value="{{user_form.password.value|default_if_none:''}}" />
             </div>
             {% if user_form.password.errors %}
                 {{ user_form.password.errors }}
@@ -74,7 +74,7 @@
                     class="form-control" 
                     id="{{user_form.password2.name}}" 
                     name="{{user_form.password2.name}}"
-                    name="{{user_form.password2.value}}" />
+                    name="{{user_form.password2.value|default_if_none:''}}" />
             </div>
             {% if user_form.password2.errors %}
                 {{ user_form.password2.errors }}

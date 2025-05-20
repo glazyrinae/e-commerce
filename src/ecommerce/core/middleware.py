@@ -5,6 +5,7 @@ class AnonymousRequiredMiddleware:
         self.get_response = get_response
         self.allowed_paths = [
             '/account/register/',
+            '/account/login/',
         ]
     
     def __call__(self, request):

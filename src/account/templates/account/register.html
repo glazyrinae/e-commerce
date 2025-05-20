@@ -1,0 +1,89 @@
+{% extends "base/base.html" %}
+{% block title %}Create an account{% endblock %}
+{% block content %}
+<h1>Create an account</h1>
+<p>Please, sign up using the following form:</p>
+<form method="post" action="{% url 'register' %}">
+    <div class="container">
+
+        <div class="row mb-3">
+            <label for="{{user_form.username.name}}" class="col-sm-2 col-form-label">{{ user_form.username.label }}</label>
+            <div class="col-sm-5">
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    id="{{user_form.username.name}}" 
+                    name="{{user_form.username.name}}" 
+                    value="{{user_form.username.value}}"/>
+            </div>
+            {% if user_form.username.errors %}
+                {{ user_form.username.errors }}
+            {% endif %}
+        </div>
+
+        <div class="row mb-3">
+            <label for="{{user_form.first_name.name}}" class="col-sm-2 col-form-label">{{ user_form.first_name.label }}</label>
+            <div class="col-sm-5">
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    id="{{user_form.first_name.name}}"  
+                    name="{{user_form.first_name.name}}"
+                    value="{{user_form.first_name.value}}" />
+            </div>
+            {% if user_form.first_name.errors %}
+                {{ user_form.first_name.errors }}
+            {% endif %}
+        </div>
+        
+        <div class="row mb-3">
+            <label for="{{user_form.email.name}}" class="col-sm-2 col-form-label">{{ user_form.email.label }}</label>
+            <div class="col-sm-5">
+                <input 
+                    type="email" 
+                    class="form-control" 
+                    id="{{user_form.email.name}}"  
+                    name="{{user_form.email.name}}"
+                    value="{{user_form.email.value}}" />
+            </div>
+            {% if user_form.email.errors %}
+                {{ user_form.email.errors }}
+            {% endif %}
+        </div>
+
+        <div class="row mb-3">
+            <label for="{{user_form.password.name}}" class="col-sm-2 col-form-label">{{ user_form.password.label }}</label>
+            <div class="col-sm-5">
+                <input 
+                    type="password" 
+                    class="form-control" 
+                    id="{{user_form.password.name}}"  
+                    name="{{user_form.password.name}}"
+                    value="{{user_form.password.value}}" />
+            </div>
+            {% if user_form.password.errors %}
+                {{ user_form.password.errors }}
+            {% endif %}
+        </div>
+        
+        <div class="row mb-3">
+            <label for="{{user_form.password2.name}}" class="col-sm-2 col-form-label">{{ user_form.password2.label }}</label>
+            <div class="col-sm-5">
+                <input 
+                    type="password" 
+                    class="form-control" 
+                    id="{{user_form.password2.name}}" 
+                    name="{{user_form.password2.name}}"
+                    name="{{user_form.password2.value}}" />
+            </div>
+            {% if user_form.password2.errors %}
+                {{ user_form.password2.errors }}
+            {% endif %}
+        </div>
+
+        <p><input type="submit" class="btn btn-primary px-4" value="Create my account"></p>
+    </div>
+    {% csrf_token %}
+</form>
+
+{% endblock %}

@@ -1,0 +1,9 @@
+.*
+docker-compose.*
+Dockerfile
+
+db_data
+db_backup
+redis_data
+logs
+certbot

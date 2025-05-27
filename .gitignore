@@ -3,11 +3,17 @@
 
 app/Dockerfile
 data/
-app/blog/migrations/*
-app/static/*
-app/media/*
+src/blog/migrations/*
+src/static/*
+src/media/*
 logs/*
 .vscode/
 docker-compose.yml
 .env
-
+deploy/db_data
+deploy/db_backup
+deploy/redis_data
+deploy/node_modules/
+# TODO: раскомментить, т.к лок-файлы - необходимость!
+deploy/package-lock.json 
+docker-compose.local.yml

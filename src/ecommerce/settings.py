@@ -9,8 +9,12 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
-import os
+import os, dj_database_url
 from pathlib import Path
+from environs import Env
+
+env = Env()
+env.read_env()  # читает .env файл
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +24,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-vmtk+*6c9^%21y8&7j*196*6wgp1v-m+z)3(9p(fjcldul3qu='
+SECRET_KEY = env.str("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool("DEBUG")
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
 
 
 # Application definition
@@ -38,7 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'eshop.apps.EshopConfig',
+    'products.apps.ProductsConfig',
 ]
 
 MIDDLEWARE = [
@@ -77,12 +81,22 @@ WSGI_APPLICATION = 'ecommerce.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    # 'default': {
+    #     "ENGINE": os.getenv("SQL_ENGINE", "django.db.backends.sqlite3"),
+    #     "NAME": os.getenv("POSTGRES_DB", "ecommerce"),
+    #     "USER": os.getenv("POSTGRES_USER", "user"),
+    #     "PASSWORD": os.getenv("POSTGRES_PASSWORD", "password"),
+    #     "HOST": os.getenv("SQL_HOST", "localhost"),
+    #     "PORT": os.getenv("SQL_PORT", "5432"),
+    # }
+    'default': dj_database_url.parse(
+        os.getenv('DATABASE_URL'),
+        engine='django.db.backends.postgresql',
+        # conn_max_age=600,
+        # conn_health_checks=True,
+        # ssl_require=not DEBUG
+    )
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -137,9 +151,104 @@ LOGOUT_URL = 'logout'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 #EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'  # Или другой SMTP-сервер
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'railot116@gmail.com'
-EMAIL_HOST_PASSWORD = '123'
-DEFAULT_FROM_EMAIL = 'railot116@gmail.com'
+EMAIL_HOST = env.str("EMAIL_HOST")
+EMAIL_PORT = env.int("EMAIL_PORT")
+EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS")
+EMAIL_HOST_USER = env.str("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = env.str("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL")
+
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    
+    # Форматтеры (как будут выглядеть записи)
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    
+    # Обработчики (куда пишем логи)
+    'handlers': {
+
+        # 'db': {
+        #     'class': 'django_db_logger.db_log_handler.DatabaseLogHandler'
+        # },
+
+        # Консольный вывод
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        
+        # Файловый обработчик для приложения "products_file"
+        'products_file': {
+            'class': 'logging.FileHandler',
+            'filename': './logs/products_file.log',  # путь к файлу
+            # 'maxBytes': 5 * 1024 * 1024,  # 5 МБ
+            # 'backupCount': 3,  # хранить 3 файла (shop.log, shop.log.1, ...)
+            'formatter': 'verbose',
+        },
+        
+        # Файловый обработчик для приложения "account_file"
+        'account_file': {
+            'class': 'logging.FileHandler',
+            'filename': './logs/account_file.log',
+            # 'maxBytes': 5 * 1024 * 1024,  # 5 МБ
+            # 'backupCount': 3,  # хранить 3 файла (shop.log, shop.log.1, ...)
+            'formatter': 'verbose',
+        },
+        
+        # Можно добавить обработчик для ошибок
+        'error_file': {
+            'class': 'logging.FileHandler',
+            'filename': './logs/errors.log',
+            # 'maxBytes': 5 * 1024 * 1024,  # 5 МБ
+            # 'backupCount': 3,  # хранить 3 файла (shop.log, shop.log.1, ...)
+            'level': 'ERROR',  # только ERROR и выше
+            'formatter': 'verbose',
+        },
+    },
+    
+    # Настройки логгеров для каждого приложения
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+
+        # Логи приложения "products" (пишем в консоль + файл)
+        'products': {
+            'handlers': ['console', 'products_file'],
+            'level': 'DEBUG',
+            'propagate': False,  # не дублировать в родительских логгерах
+        },
+        
+        # Логи приложения "account" (только в файл)
+        'account': {
+            'handlers': ['console', 'account_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        
+        # Логи ошибок (все ошибки Django и приложений)
+        'django.request': {
+            'handlers': ['error_file'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    },
+}

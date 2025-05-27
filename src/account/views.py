@@ -15,6 +15,9 @@ from django.conf import settings
 from django.shortcuts import redirect
 from django.utils.encoding import force_str
 from django.contrib.auth.models import User
+import logging
+
+logger = logging.getLogger('account')
 
 def send_activation_email(user, request):
     # Генерация токена и uid
@@ -67,6 +70,7 @@ def user_login(request):
             if user is not None:
                 if user.is_active:
                     login(request, user)
+                    logger.info(f'Пользователь {user} успешно авторизован')
                     return HttpResponse("Authenticated successfully")
             else:
                 return HttpResponse("Disabled account")

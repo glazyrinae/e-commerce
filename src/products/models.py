@@ -16,7 +16,7 @@ class Categories(models.Model):
         verbose_name_plural = 'categories'
 
     def __str__(self):
-        self.title
+        return self.title
     
 
 class Products(models.Model):
@@ -52,7 +52,7 @@ class Products(models.Model):
         ]
 
     def __str__(self):
-        self.title
+        return self.title
 
 class Images(models.Model):
     IMAGE_TYPE_CHOICES = [

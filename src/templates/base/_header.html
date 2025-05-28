@@ -71,7 +71,7 @@
     </div>
     <nav id="header-nav" class="navbar navbar-expand-lg">
       <div class="container-lg">
-        <a class="navbar-brand" href="index.html">
+        <a class="navbar-brand" href="/">
           <img src="{% static "img/main-logo.png" %}" class="logo" alt="logo">
         </a>
         <button class="navbar-toggler d-flex d-lg-none order-3 border-0 p-1 ms-2" type="button" data-bs-toggle="offcanvas"
@@ -90,6 +90,13 @@
           </div>
           <div class="offcanvas-body">
             <ul id="navbar" class="navbar-nav fw-bold justify-content-end align-items-center flex-grow-1">
+            {% for item in main_menu %}
+              <li class="nav-item">
+                <a class="nav-link me-5" href="{{ item.url }}">{{ item.title }}</a>
+              </li>
+            {% endfor %}
+            </ul>
+            <!-- <ul id="navbar" class="navbar-nav fw-bold justify-content-end align-items-center flex-grow-1">
               <li class="nav-item dropdown">
                 <a class="nav-link me-5 active dropdown-toggle border-0" href="#" data-bs-toggle="dropdown"
                   aria-expanded="false">Home</a>
@@ -129,7 +136,7 @@
               <li class="nav-item">
                 <a class="nav-link me-5" href="#">Sale</a>
               </li>
-            </ul>
+            </ul> -->
           </div>
         </div>
         <div class="user-items ps-0 ps-md-5">

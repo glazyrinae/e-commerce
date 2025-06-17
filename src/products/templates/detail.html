@@ -1,0 +1,220 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block content %}
+<!-- Основной контент -->
+<div class="container mb-5">
+    <div class="row">
+        <!-- Галерея товара -->
+        <div class="col-lg-6">
+            <div class="row">
+                <!-- Главное изображение -->
+                <div class="col-12 mb-4">
+                    <img src='{% static "img/summary-item1.jpg" %}' class="img-fluid main-image" id="mainImage" alt="Кроссовки Runner Pro">
+                </div>
+                
+                <!-- Миниатюры -->
+                <div class="col-3 product-gallery">
+                    <img src='{% static "img/summary-item1.jpg" %}' class="img-fluid" onclick="document.getElementById('mainImage').src=this.src" alt="Вид 1">
+                </div>
+                <div class="col-3 product-gallery">
+                    <img src='{% static "img/summary-item1.jpg" %}' class="img-fluid" onclick="document.getElementById('mainImage').src=this.src" alt="Вид 2">
+                </div>
+                <div class="col-3 product-gallery">
+                    <img src='{% static "img/summary-item1.jpg" %}' class="img-fluid" onclick="document.getElementById('mainImage').src=this.src" alt="Вид 3">
+                </div>
+                <div class="col-3 product-gallery">
+                    <img src='{% static "img/summary-item1.jpg" %}' class="img-fluid" onclick="document.getElementById('mainImage').src=this.src" alt="Вид 4">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Информация о товаре -->
+        <div class="col-lg-6">
+            <h1>Кроссовки Runner Pro</h1>
+            <div class="d-flex align-items-center mb-3">
+                <div class="me-3">
+                    <span class="price">8 990 ₽</span>
+                    <span class="old-price ms-2">10 500 ₽</span>
+                    <span class="badge badge-discount ms-2">-14%</span>
+                </div>
+                <span class="text-success"><i class="bi bi-check-circle-fill"></i> В наличии</span>
+            </div>
+            
+            <div class="mb-4">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-star-fill text-warning"></i>
+                    <i class="bi bi-star-fill text-warning"></i>
+                    <i class="bi bi-star-fill text-warning"></i>
+                    <i class="bi bi-star-fill text-warning"></i>
+                    <i class="bi bi-star-half text-warning"></i>
+                    <span class="ms-2">4.5 (128 отзывов)</span>
+                </div>
+                <a href="#reviews" class="text-decoration-none">Посмотреть все отзывы</a>
+            </div>
+            
+            <div class="mb-4">
+                <h5>Цвет</h5>
+                <div class="d-flex">
+                    <div class="form-check me-3">
+                        <input class="form-check-input" type="radio" name="color" id="colorBlack" checked>
+                        <label class="form-check-label" for="colorBlack">
+                            Черный
+                        </label>
+                    </div>
+                    <div class="form-check me-3">
+                        <input class="form-check-input" type="radio" name="color" id="colorBlue">
+                        <label class="form-check-label" for="colorBlue">
+                            Синий
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="color" id="colorGray">
+                        <label class="form-check-label" for="colorGray">
+                            Серый
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <h5>Размер</h5>
+                <div class="d-flex flex-wrap gap-2">
+                    <div class="size-option border rounded p-2 text-center" style="width: 50px;">38</div>
+                    <div class="size-option border rounded p-2 text-center" style="width: 50px;">39</div>
+                    <div class="size-option border rounded p-2 text-center active" style="width: 50px;">40</div>
+                    <div class="size-option border rounded p-2 text-center" style="width: 50px;">41</div>
+                    <div class="size-option border rounded p-2 text-center" style="width: 50px;">42</div>
+                    <div class="size-option border rounded p-2 text-center" style="width: 50px;">43</div>
+                    <div class="size-option border rounded p-2 text-center" style="width: 50px;">44</div>
+                </div>
+                <a href="#" class="d-block mt-2 text-decoration-none">Таблица размеров</a>
+            </div>
+            
+            <div class="d-flex gap-3 mb-4">
+                <div class="input-group" style="width: 120px;">
+                    <button class="btn btn-outline-secondary" type="button">-</button>
+                    <input type="text" class="form-control text-center" value="1">
+                    <button class="btn btn-outline-secondary" type="button">+</button>
+                </div>
+                <button class="btn btn-danger flex-grow-1"><i class="bi bi-cart-fill me-2"></i>Добавить в корзину</button>
+                <button class="btn btn-outline-secondary"><i class="bi bi-heart"></i></button>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 >Доставка и оплата</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Бесплатная доставка от 5 000 ₽</li>
+                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Доставка за 1-2 дня по Москве</li>
+                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Оплата при получении или онлайн</li>
+                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Возврат в течение 14 дней</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Описание и характеристики -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <ul class="nav nav-tabs" id="productTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button">Описание</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="specs-tab" data-bs-toggle="tab" data-bs-target="#specs" type="button">Характеристики</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button">Отзывы</button>
+                </li>
+            </ul>
+            <div class="tab-content p-3 border border-top-0 rounded-bottom" id="productTabsContent">
+                <div class="tab-pane fade show active" id="description" role="tabpanel">
+                    <h4>Кроссовки Runner Pro</h4>
+                    <p>Инновационные кроссовки для бега с технологией амортизации AirFlex. Идеально подходят для длительных пробежек и тренировок. Верх из дышащего материала обеспечивает оптимальную вентиляцию, а подошва с гелевой вставкой снижает ударную нагрузку на суставы.</p>
+                    <p>Особенности:</p>
+                    <ul>
+                        <li>Дышащий сетчатый верх</li>
+                        <li>Технология амортизации AirFlex</li>
+                        <li>Гелевая вставка в подошве</li>
+                        <li>Износостойкая подметка</li>
+                        <li>Светоотражающие элементы</li>
+                    </ul>
+                </div>
+                <div class="tab-pane fade" id="specs" role="tabpanel">
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <th scope="row">Бренд</th>
+                                <td>SportMaster</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Модель</th>
+                                <td>Runner Pro 2023</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Материал верха</th>
+                                <td>Синтетическая сетка</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Материал подошвы</th>
+                                <td>Резина с гелевой вставкой</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Сезон</th>
+                                <td>Весна-лето</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Вес пары</th>
+                                <td>320 г (размер 40)</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Страна производства</th>
+                                <td>Вьетнам</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="reviews" role="tabpanel">
+                    <div class="mb-4">
+                        <h4>Отзывы о товаре</h4>
+                        <button class="btn btn-primary">Написать отзыв</button>
+                    </div>
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <h5 class="card-title">Александр</h5>
+                                <div>
+                                    <i class="bi bi-star-fill text-warning"></i>
+                                    <i class="bi bi-star-fill text-warning"></i>
+                                    <i class="bi bi-star-fill text-warning"></i>
+                                    <i class="bi bi-star-fill text-warning"></i>
+                                    <i class="bi bi-star-fill text-warning"></i>
+                                </div>
+                            </div>
+                            <h6 class="card-subtitle mb-2 text-muted">20 мая 2023</h6>
+                            <p class="card-text">Отличные кроссовки! Очень удобные, ноги не устают даже после длительных пробежек. Качество на высоте.</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <h5 class="card-title">Екатерина</h5>
+                                <div>
+                                    <i class="bi bi-star-fill text-warning"></i>
+                                    <i class="bi bi-star-fill text-warning"></i>
+                                    <i class="bi bi-star-fill text-warning"></i>
+                                    <i class="bi bi-star-fill text-warning"></i>
+                                    <i class="bi bi-star text-warning"></i>
+                                </div>
+                            </div>
+                            <h6 class="card-subtitle mb-2 text-muted">15 апреля 2023</h6>
+                            <p class="card-text">Хорошие кроссовки, но немного жестковаты в первые дни носки. Через неделю разносятся и становятся очень удобными.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

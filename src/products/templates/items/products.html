@@ -1,158 +1,122 @@
 {% extends 'base/base.html' %}
 {% load static %}
 {% block content %}
-  <section id="latest-products" class="product-store py-2 my-2 py-md-5 my-md-5 pt-0">
+  <section id="latest-products" class="product-store mb-0 pb-0">
     <div class="container-md">
       <div class="display-header d-flex align-items-center justify-content-between">
-        <h2 class="section-title text-uppercase">Latest Products</h2>
+        <h2 class="section-title text-uppercase">Products </h2>
         <div class="btn-right">
           <a href="" class="d-inline-block text-uppercase text-hover fw-bold">View all</a>
         </div>
       </div>
       <div class="product-content padding-small">
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5">
-          <div class="col mb-4 mb-3">
+        <div id="content-container" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5">
+        {% for product in products %}
+          <div class="col mb-4 mb-3"  onclick="window.location.href='/{{ product.category }}/{{product.id}}'">
             <div class="product-card position-relative">
-              <div class="card-img">
-                <img src="{% static "img/card-item6.jpg" %}" alt="product-item" class="product-image img-fluid">
-                <div class="cart-concern position-absolute d-flex justify-content-center">
-                  <div class="cart-button d-flex gap-2 justify-content-center align-items-center">
-                    <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#modallong">
-                      <svg class="shopping-carriage">
-                        <use xlink:href="#shopping-carriage"></use>
-                      </svg>
-                    </button>
-                    <button type="button" class="btn btn-light" data-bs-target="#modaltoggle" data-bs-toggle="modal">
-                      <svg class="quick-view">
-                        <use xlink:href="#quick-view"></use>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                <!-- cart-concern -->
-              </div>
-              <div class="card-detail d-flex justify-content-between align-items-center mt-3">
-                <h3 class="card-title fs-6 fw-normal m-0">
-                  <a href="index.html">Running shoes for men</a>
-                </h3>
-                <span class="card-price fw-bold">$99</span>
-              </div>
-            </div>
-          </div>
-          <div class="col mb-4 mb-3">
-            <div class="product-card position-relative">
-              <div class="card-img">
-                <img src="{% static "img/card-item7.jpg" %}" alt="product-item" class="product-image img-fluid">
-                <div class="cart-concern position-absolute d-flex justify-content-center">
-                  <div class="cart-button d-flex gap-2 justify-content-center align-items-center">
-                    <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#modallong">
-                      <svg class="shopping-carriage">
-                        <use xlink:href="#shopping-carriage"></use>
-                      </svg>
-                    </button>
-                    <button type="button" class="btn btn-light" data-bs-target="#modaltoggle" data-bs-toggle="modal">
-                      <svg class="quick-view">
-                        <use xlink:href="#quick-view"></use>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                <!-- cart-concern -->
-              </div>
-              <div class="card-detail d-flex justify-content-between align-items-center mt-3">
-                <h3 class="card-title fs-6 fw-normal m-0">
-                  <a href="index.html">Running shoes for men</a>
-                </h3>
-                <span class="card-price fw-bold">$99</span>
-              </div>
-            </div>
-          </div>
-          <div class="col mb-4 mb-3">
-            <div class="product-card position-relative">
-              <div class="card-img">
-                <img src="{% static "img/card-item8.jpg" %}" alt="product-item" class="product-image img-fluid">
-                <div class="cart-concern position-absolute d-flex justify-content-center">
-                  <div class="cart-button d-flex gap-2 justify-content-center align-items-center">
-                    <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#modallong">
-                      <svg class="shopping-carriage">
-                        <use xlink:href="#shopping-carriage"></use>
-                      </svg>
-                    </button>
-                    <button type="button" class="btn btn-light" data-bs-target="#modaltoggle" data-bs-toggle="modal">
-                      <svg class="quick-view">
-                        <use xlink:href="#quick-view"></use>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                <!-- cart-concern -->
-              </div>
-              <div class="card-detail d-flex justify-content-between align-items-center mt-3">
-                <h3 class="card-title fs-6 fw-normal m-0">
-                  <a href="index.html">Running shoes for men</a>
-                </h3>
-                <span class="card-price fw-bold">$99</span>
-              </div>
-            </div>
-          </div>
-          <div class="col mb-4 mb-3">
-            <div class="product-card position-relative">
-              <div class="card-img">
-                <img src="{% static "img/card-item9.jpg" %}" alt="product-item" class="product-image img-fluid">
-                <div class="cart-concern position-absolute d-flex justify-content-center">
-                  <div class="cart-button d-flex gap-2 justify-content-center align-items-center">
-                    <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#modallong">
-                      <svg class="shopping-carriage">
-                        <use xlink:href="#shopping-carriage"></use>
-                      </svg>
-                    </button>
-                    <button type="button" class="btn btn-light" data-bs-target="#modaltoggle" data-bs-toggle="modal">
-                      <svg class="quick-view">
-                        <use xlink:href="#quick-view"></use>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                <!-- cart-concern -->
-              </div>
-              <div class="card-detail d-flex justify-content-between align-items-center mt-3">
-                <h3 class="card-title fs-6 fw-normal m-0">
-                  <a href="index.html">Running shoes for men</a>
-                </h3>
-                <span class="card-price fw-bold">$99</span>
-              </div>
-            </div>
-          </div>
-          <div class="col mb-4 mb-3">
-            <div class="product-card position-relative">
-              <div class="card-img">
+                <div class="card-img">
                 <img src="{% static "img/card-item10.jpg" %}" alt="product-item" class="product-image img-fluid">
                 <div class="cart-concern position-absolute d-flex justify-content-center">
-                  <div class="cart-button d-flex gap-2 justify-content-center align-items-center">
+                    <div class="cart-button d-flex gap-2 justify-content-center align-items-center">
                     <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#modallong">
-                      <svg class="shopping-carriage">
+                        <svg class="shopping-carriage">
                         <use xlink:href="#shopping-carriage"></use>
-                      </svg>
+                        </svg>
                     </button>
                     <button type="button" class="btn btn-light" data-bs-target="#modaltoggle" data-bs-toggle="modal">
-                      <svg class="quick-view">
+                        <svg class="quick-view">
                         <use xlink:href="#quick-view"></use>
-                      </svg>
+                        </svg>
                     </button>
-                  </div>
+                    </div>
                 </div>
                 <!-- cart-concern -->
-              </div>
-              <div class="card-detail d-flex justify-content-between align-items-center mt-3">
+                </div>
+                <div class="card-detail d-flex justify-content-between align-items-center mt-3">
                 <h3 class="card-title fs-6 fw-normal m-0">
-                  <a href="index.html">Running shoes for men</a>
+                    <a href="index.html">{{ product.title }}</a>
                 </h3>
-                <span class="card-price fw-bold">$99</span>
-              </div>
+                <span class="card-price fw-bold">{{ product.price }}</span>
+                </div>
             </div>
-          </div>
         </div>
+        {% endfor %}
       </div>
     </div>
   </section>
+
+{% if page_obj.has_next %}
+<div class="d-flex justify-content-center">
+    <button id="load-more-btn" class="load-more-button btn btn-primary px-4" 
+        data-next-page="{{ page_obj.next_page_number }}">
+    Подгрузить еще
+</button>
+</div>
+<div id="loading-indicator"  style="display: none;">Загрузка...</div>
+{% endif %}
+
+{% endblock %}
+
+{% block js %}
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+    const loadMoreBtn = document.getElementById('load-more-btn');
+    const contentContainer = document.getElementById('content-container');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', loadMoreContent);
+    } 
+
+    // window.addEventListener('scroll', function() {
+    //   if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
+    //     loadMoreContent();
+    //   }
+    // });   
+
+    function loadMoreContent() {
+        const nextPage = loadMoreBtn.dataset.nextPage;
+        const url = `load-more/male/?page=${nextPage}`;
+        
+        // Показываем индикатор загрузки и скрываем кнопку
+        loadMoreBtn.style.display = 'none';
+        loadingIndicator.style.display = 'block';
+        
+        fetch(url, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Добавляем новый контент
+            contentContainer.insertAdjacentHTML('beforeend', data.html);
+            
+            // Обновляем кнопку
+            if (data.has_next) {
+                loadMoreBtn.dataset.nextPage = parseInt(nextPage) + 1;
+                loadMoreBtn.style.display = 'block';
+            } else {
+                loadMoreBtn.remove();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            loadMoreBtn.textContent = 'Ошибка загрузки';
+        })
+        .finally(() => {
+            loadingIndicator.style.display = 'none';
+        });
+    }
+});
+</script>
+<script src="{% static "js/jquery-1.11.0.min.js" %}"></script> 
+<script src="{% static "js/plugins.js" %}"></script> 
+<script src="{% static "js/script.js" %}"></script> 
 {% endblock %}

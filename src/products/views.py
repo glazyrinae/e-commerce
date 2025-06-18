@@ -18,11 +18,12 @@ def product(request, category_slug, product_id):
         category__slug=category_slug,
         id=product_id,
     )
-    return render(request, "detail.html", {"product": product})
+    images = product.images.all()
+    return render(request, "detail.html", {"product": product, "images":images})
 
 
 def products(request, category_slug):
-    items_per_page = 6
+    items_per_page = 5
     page_number = request.GET.get("page", 1)
 
     products = (
@@ -44,7 +45,7 @@ def products(request, category_slug):
 
 def load_more_content(request, category_slug):
     page_number = request.GET.get("page", 1)
-    items_per_page = 6  # Количество элементов на страницу
+    items_per_page = 5  # Количество элементов на страницу
 
     # Ваш основной queryset (пример с продуктами)
     products = (

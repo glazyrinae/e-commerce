@@ -1,5 +1,53 @@
 {% extends 'base/base.html' %}
 {% load static %}
+{% load filters %}
+{% block css %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .product-img {
+            height: 200px;
+            object-fit: contain;
+        }
+        .discount-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.9rem;
+        }
+        .size-option {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .size-option:hover, .size-option.active {
+            background-color: #0d6efd;
+            color: white;
+        }
+        .cart-item-img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+        }
+        .offcanvas-cart {
+            width: 400px;
+        }
+        .btn {
+            --bs-btn-border-radius: 0.25rem;
+        }
+        .banner-content .banner-title, .card .card-title {
+            font-weight: 600;
+            line-height: 1em;
+            letter-spacing: 0;
+        }
+        .blue-href {
+            color: rgb(13 110 253)
+        }
+        @media (max-width: 768px) {
+            .offcanvas-cart {
+                width: 100%;
+            }
+        }
+    </style>
+{% endblock %}
 {% block content %}
 <!-- Основной контент -->
 <div class="container mb-5">
@@ -9,33 +57,25 @@
             <div class="row">
                 <!-- Главное изображение -->
                 <div class="col-12 mb-4">
-                    <img src='{% static "img/summary-item1.jpg" %}' class="img-fluid main-image" id="mainImage" alt="Кроссовки Runner Pro">
+                    <img src="{{ MEDIA_URL }}{{  product.get_path_image_main }}" class="img-fluid main-image" id="mainImage" alt="Кроссовки Runner Pro">
                 </div>
-                
-                <!-- Миниатюры -->
-                <div class="col-3 product-gallery">
-                    <img src='{% static "img/summary-item1.jpg" %}' class="img-fluid" onclick="document.getElementById('mainImage').src=this.src" alt="Вид 1">
-                </div>
-                <div class="col-3 product-gallery">
-                    <img src='{% static "img/summary-item1.jpg" %}' class="img-fluid" onclick="document.getElementById('mainImage').src=this.src" alt="Вид 2">
-                </div>
-                <div class="col-3 product-gallery">
-                    <img src='{% static "img/summary-item1.jpg" %}' class="img-fluid" onclick="document.getElementById('mainImage').src=this.src" alt="Вид 3">
-                </div>
-                <div class="col-3 product-gallery">
-                    <img src='{% static "img/summary-item1.jpg" %}' class="img-fluid" onclick="document.getElementById('mainImage').src=this.src" alt="Вид 4">
-                </div>
+                {% for image in images %}
+                    <!-- Миниатюры -->
+                    <div class="col-3 product-gallery">
+                        <img src='{{ MEDIA_URL }}{{  image.image }}' class="img-fluid" onclick="document.getElementById('mainImage').src=this.src" alt="Вид 1">
+                    </div>
+                {% endfor %}
             </div>
         </div>
         
         <!-- Информация о товаре -->
         <div class="col-lg-6">
-            <h1>Кроссовки Runner Pro</h1>
+            <h1>{{product.title}}</h1>
             <div class="d-flex align-items-center mb-3">
                 <div class="me-3">
-                    <span class="price">8 990 ₽</span>
-                    <span class="old-price ms-2">10 500 ₽</span>
-                    <span class="badge badge-discount ms-2">-14%</span>
+                    <span class="h2 text-danger">{{ product.discount_price | format_price }} ₽</span>
+                    <span class="text-muted text-decoration-line-through ms-2">{{ product.price | format_price }} ₽</span>
+                    <span class="badge bg-danger ms-2">{% get_discount product.price product.discount_price %}</span>
                 </div>
                 <span class="text-success"><i class="bi bi-check-circle-fill"></i> В наличии</span>
             </div>
@@ -49,7 +89,7 @@
                     <i class="bi bi-star-half text-warning"></i>
                     <span class="ms-2">4.5 (128 отзывов)</span>
                 </div>
-                <a href="#reviews" class="text-decoration-none">Посмотреть все отзывы</a>
+                <a href="#reviews" class="blue-href text-decoration-none">Посмотреть все отзывы</a>
             </div>
             
             <div class="mb-4">
@@ -79,7 +119,7 @@
             <div class="mb-4">
                 <h5>Размер</h5>
                 <div class="d-flex flex-wrap gap-2">
-                    <div class="size-option border rounded p-2 text-center" style="width: 50px;">38</div>
+                    <div class="size-option border rounded p-2 text-center text-decoration-line-through" style="width: 50px;">38</div>
                     <div class="size-option border rounded p-2 text-center" style="width: 50px;">39</div>
                     <div class="size-option border rounded p-2 text-center active" style="width: 50px;">40</div>
                     <div class="size-option border rounded p-2 text-center" style="width: 50px;">41</div>
@@ -87,7 +127,7 @@
                     <div class="size-option border rounded p-2 text-center" style="width: 50px;">43</div>
                     <div class="size-option border rounded p-2 text-center" style="width: 50px;">44</div>
                 </div>
-                <a href="#" class="d-block mt-2 text-decoration-none">Таблица размеров</a>
+                <a href="#" class="blue-href d-block mt-2 text-decoration-none">Таблица размеров</a>
             </div>
             
             <div class="d-flex gap-3 mb-4">
@@ -102,7 +142,7 @@
             
             <div class="card mb-4">
                 <div class="card-body">
-                    <h5 >Доставка и оплата</h5>
+                    <h5 class="card-title"><i class="bi bi-truck text-primary me-2"></i>Доставка и оплата</h5>
                     <ul class="list-unstyled">
                         <li><i class="bi bi-check-circle-fill text-success me-2"></i>Бесплатная доставка от 5 000 ₽</li>
                         <li><i class="bi bi-check-circle-fill text-success me-2"></i>Доставка за 1-2 дня по Москве</li>
@@ -130,47 +170,39 @@
             </ul>
             <div class="tab-content p-3 border border-top-0 rounded-bottom" id="productTabsContent">
                 <div class="tab-pane fade show active" id="description" role="tabpanel">
-                    <h4>Кроссовки Runner Pro</h4>
-                    <p>Инновационные кроссовки для бега с технологией амортизации AirFlex. Идеально подходят для длительных пробежек и тренировок. Верх из дышащего материала обеспечивает оптимальную вентиляцию, а подошва с гелевой вставкой снижает ударную нагрузку на суставы.</p>
-                    <p>Особенности:</p>
-                    <ul>
-                        <li>Дышащий сетчатый верх</li>
-                        <li>Технология амортизации AirFlex</li>
-                        <li>Гелевая вставка в подошве</li>
-                        <li>Износостойкая подметка</li>
-                        <li>Светоотражающие элементы</li>
-                    </ul>
+                    <h4>{{product.title}}</h4>
+                    {{ product.desc|markdown }}
                 </div>
                 <div class="tab-pane fade" id="specs" role="tabpanel">
                     <table class="table">
                         <tbody>
                             <tr>
                                 <th scope="row">Бренд</th>
-                                <td>SportMaster</td>
+                                <td>{{product.get_brand_display|upper}}</td>
                             </tr>
                             <tr>
                                 <th scope="row">Модель</th>
-                                <td>Runner Pro 2023</td>
+                                <td>{{product.product_number}}</td>
                             </tr>
                             <tr>
                                 <th scope="row">Материал верха</th>
-                                <td>Синтетическая сетка</td>
+                                <td>{{product.get_upper_material_display}}</td>
                             </tr>
                             <tr>
                                 <th scope="row">Материал подошвы</th>
-                                <td>Резина с гелевой вставкой</td>
+                                <td>{{product.get_sole_material_display}}</td>
                             </tr>
                             <tr>
                                 <th scope="row">Сезон</th>
-                                <td>Весна-лето</td>
+                                <td>{{product.get_season_display}}</td>
                             </tr>
                             <tr>
                                 <th scope="row">Вес пары</th>
-                                <td>320 г (размер 40)</td>
+                                <td>{{product.weight}} г</td>
                             </tr>
                             <tr>
                                 <th scope="row">Страна производства</th>
-                                <td>Вьетнам</td>
+                                <td>{{product.get_country_display}}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -216,5 +248,6 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 {% endblock %}

@@ -1,7 +1,26 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from django import forms
-from .models import Categories, Images, Products
+from .models import Categories, Images, Products, Store, Colors, Sizes
+
+
+@admin.register(Colors)
+class ColorsAdmin(admin.ModelAdmin):
+    list_display = ["title"]
+    search_fields = ["title"]
+
+
+@admin.register(Sizes)
+class SizesAdmin(admin.ModelAdmin):
+    list_display = ["size"]
+    search_fields = ["size"]
+
+
+@admin.register(Store)
+class StoreAdmin(admin.ModelAdmin):
+    list_display = ["color", "size", "product", "cnt"]
+    search_fields = ["color", "size", "product"]
+    raw_id_fields = ["color", "size", "product"]
 
 
 class ImageInline(admin.StackedInline):
@@ -29,7 +48,16 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Products)
 class PostAdmin(admin.ModelAdmin):
-    list_display = ["title", "category", "slug", "desc", "price", "discount_price", "is_active", "product_number"]
+    list_display = [
+        "title",
+        "category",
+        "slug",
+        "desc",
+        "price",
+        "discount_price",
+        "is_active",
+        "product_number",
+    ]
     list_filter = ["title", "created_at"]
     search_fields = ["title", "created_at", "price"]
     prepopulated_fields = {"slug": ("title",)}

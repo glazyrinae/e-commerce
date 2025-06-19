@@ -232,6 +232,14 @@ class Store(models.Model):
     )
     cnt = models.SmallIntegerField()
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["color", "size", "product"],
+                name="unique_variant_color_size_product",
+            )
+        ]
+
     def __str__(self):
         return "store"
 

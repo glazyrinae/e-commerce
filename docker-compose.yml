@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  web:
+    build: 
+      context: ./deploy
+      dockerfile: ./Dockerfile
+    # command: >
+    #   sh -c "django-admin startproject ecommerce /usr/src/app
+    #          python manage.py migrate &&
+    #          python manage.py collectstatic --noinput &&
+    #          gunicorn ecommerce.wsgi:application --bind 0.0.0.0:8000"
+    user: "${UID}:${GID}"
+    working_dir: /app
+    restart: always
+    volumes:
+      - ./src:/app
+      - ./media:/app/media
+      - ./logs:/app/logs
+
+    command: gunicorn --bind 0.0.0.0:8000 --reload ecommerce.wsgi:application
+    ports:
+      - 9000:8000
+    env_file:
+      - ./.env
+    depends_on:
+      - db
+  db:
+    image: postgres:17.2
+    user: "${UID}:${GID}"
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+    volumes:
+      - ./deploy/db_data:/var/lib/postgresql/data/
+      - ./deploy/db_backup:/backup
+    expose:
+      - "5442"
+    ports:
+      - "5442:5432"
+    env_file:
+      - ./.env
+
+volumes:
+  postgres_data:

@@ -19,7 +19,14 @@ def product(request, category_slug, product_id):
         id=product_id,
     )
     images = product.images.all()
-    return render(request, "detail.html", {"product": product, "images":images})
+    store = product.store.all()
+    colors = {str(c.color) for c in store if c.color}
+    sizes = {str(s.size) for s in store if s.size}
+    return render(
+        request,
+        "detail.html",
+        {"product": product, "images": images, "colors": colors, "sizes": sizes},
+    )
 
 
 def products(request, category_slug):

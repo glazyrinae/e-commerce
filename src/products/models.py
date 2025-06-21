@@ -221,6 +221,7 @@ class Products(models.Model):
 
 
 class Store(models.Model):
+    
     color = models.ForeignKey(
         Colors, related_name="store", on_delete=models.SET_NULL, null=True
     )

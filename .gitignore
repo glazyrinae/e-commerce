@@ -8,7 +8,6 @@ src/static/*
 media/*
 logs/*
 .vscode/
-docker-compose.yml
 .env
 deploy/db_data
 deploy/db_backup

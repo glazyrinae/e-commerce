@@ -172,98 +172,98 @@ DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL")
 
 
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
     
-    # Форматтеры (как будут выглядеть записи)
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
-    },
+#     # Форматтеры (как будут выглядеть записи)
+#     'formatters': {
+#         'verbose': {
+#             'format': '{levelname} {asctime} {module} {message}',
+#             'style': '{',
+#         },
+#         'simple': {
+#             'format': '{levelname} {message}',
+#             'style': '{',
+#         },
+#     },
     
-    # Обработчики (куда пишем логи)
-    'handlers': {
+#     # Обработчики (куда пишем логи)
+#     'handlers': {
 
-        # 'db': {
-        #     'class': 'django_db_logger.db_log_handler.DatabaseLogHandler'
-        # },
+#         # 'db': {
+#         #     'class': 'django_db_logger.db_log_handler.DatabaseLogHandler'
+#         # },
 
-        # Консольный вывод
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
-        },
+#         # Консольный вывод
+#         'console': {
+#             'class': 'logging.StreamHandler',
+#             'formatter': 'simple',
+#         },
         
-        # Файловый обработчик для приложения "products_file"
-        'products_file': {
-            'class': 'logging.FileHandler',
-            'filename': './logs/products_file.log',  # путь к файлу
-            # 'maxBytes': 5 * 1024 * 1024,  # 5 МБ
-            # 'backupCount': 3,  # хранить 3 файла (shop.log, shop.log.1, ...)
-            'formatter': 'verbose',
-        },
+#         # Файловый обработчик для приложения "products_file"
+#         'products_file': {
+#             'class': 'logging.FileHandler',
+#             'filename': './logs/products_file.log',  # путь к файлу
+#             # 'maxBytes': 5 * 1024 * 1024,  # 5 МБ
+#             # 'backupCount': 3,  # хранить 3 файла (shop.log, shop.log.1, ...)
+#             'formatter': 'verbose',
+#         },
         
-        # Файловый обработчик для приложения "account_file"
-        'account_file': {
-            'class': 'logging.FileHandler',
-            'filename': './logs/account_file.log',
-            # 'maxBytes': 5 * 1024 * 1024,  # 5 МБ
-            # 'backupCount': 3,  # хранить 3 файла (shop.log, shop.log.1, ...)
-            'formatter': 'verbose',
-        },
+#         # Файловый обработчик для приложения "account_file"
+#         'account_file': {
+#             'class': 'logging.FileHandler',
+#             'filename': './logs/account_file.log',
+#             # 'maxBytes': 5 * 1024 * 1024,  # 5 МБ
+#             # 'backupCount': 3,  # хранить 3 файла (shop.log, shop.log.1, ...)
+#             'formatter': 'verbose',
+#         },
         
-        # Можно добавить обработчик для ошибок
-        'error_file': {
-            'class': 'logging.FileHandler',
-            'filename': './logs/errors.log',
-            # 'maxBytes': 5 * 1024 * 1024,  # 5 МБ
-            # 'backupCount': 3,  # хранить 3 файла (shop.log, shop.log.1, ...)
-            'level': 'ERROR',  # только ERROR и выше
-            'formatter': 'verbose',
-        },
-    },
+#         # Можно добавить обработчик для ошибок
+#         'error_file': {
+#             'class': 'logging.FileHandler',
+#             'filename': './logs/errors.log',
+#             # 'maxBytes': 5 * 1024 * 1024,  # 5 МБ
+#             # 'backupCount': 3,  # хранить 3 файла (shop.log, shop.log.1, ...)
+#             'level': 'ERROR',  # только ERROR и выше
+#             'formatter': 'verbose',
+#         },
+#     },
     
-    # Настройки логгеров для каждого приложения
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-        },
+#     # Настройки логгеров для каждого приложения
+#     'loggers': {
+#         'django': {
+#             'handlers': ['console'],
+#             'level': 'INFO',
+#         },
         
-        'django.db.backends': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-        },
+#         'django.db.backends': {
+#             'handlers': ['console'],
+#             'level': 'DEBUG',
+#         },
 
-        # Логи приложения "products" (пишем в консоль + файл)
-        'products': {
-            'handlers': ['console', 'products_file'],
-            'level': 'DEBUG',
-            'propagate': False,  # не дублировать в родительских логгерах
-        },
+#         # Логи приложения "products" (пишем в консоль + файл)
+#         'products': {
+#             'handlers': ['console', 'products_file'],
+#             'level': 'DEBUG',
+#             'propagate': False,  # не дублировать в родительских логгерах
+#         },
         
-        # Логи приложения "account" (только в файл)
-        'account': {
-            'handlers': ['console', 'account_file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
+#         # Логи приложения "account" (только в файл)
+#         'account': {
+#             'handlers': ['console', 'account_file'],
+#             'level': 'INFO',
+#             'propagate': False,
+#         },
         
-        # Логи ошибок (все ошибки Django и приложений)
-        'django.request': {
-            'handlers': ['error_file'],
-            'level': 'ERROR',
-            'propagate': False,
-        },
-    },
-}
+#         # Логи ошибок (все ошибки Django и приложений)
+#         'django.request': {
+#             'handlers': ['error_file'],
+#             'level': 'ERROR',
+#             'propagate': False,
+#         },
+#     },
+# }
 
 DEBUG_TOOLBAR_PANELS = [
     'debug_toolbar.panels.history.HistoryPanel',

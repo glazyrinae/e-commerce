@@ -19,7 +19,6 @@ services:
       - ./logs:/app/logs
 
     command: gunicorn --bind 0.0.0.0:8000 --reload --workers 1 --threads 8 --timeout 0 ecommerce.wsgi:application
-    # gunicorn $OPTIONS --bind :8000 --workers 1 --threads 8 --timeout 0 tiny_cms.wsgi:application
     ports:
       - 9000:8000
     env_file:

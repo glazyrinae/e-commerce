@@ -845,7 +845,7 @@ a.text-hover:focus:after {
   z-index: 9;
 }
 
-.search-box input.search-input {
+.search-box select.search-input {
   font-size: 1.3em;
   width: 50%;
   height: 30px;
@@ -864,7 +864,7 @@ a.text-hover:focus:after {
 }
 
 @media only screen and (max-width: 991px) {
-  .search-box input.search-input {
+  .search-box select.search-input {
     width: 70%;
   }
 }
@@ -874,7 +874,7 @@ a.text-hover:focus:after {
     right: 20px;
   }
 
-  .search-box input.search-input {
+  .search-box select.search-input {
     min-width: 300px;
     margin-left: 20px;
   }
@@ -1619,4 +1619,12 @@ a.text-hover:focus:after {
     transform: translate3d(0, 0, 0) !important;
     opacity: 1 !important;
   }  
+}
+
+#nav-selected {
+  font-weight: bold; /* Делает текст жирным */
+  text-decoration: underline; /* Добавляет стандартное подчеркивание */
+  text-underline-offset: 5px; /* Устанавливает отступ от текста */
+  text-decoration-color: blue; /* Цвет линии */
+  text-decoration-thickness: 2px; /* Толщина линии */
 }

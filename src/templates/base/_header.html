@@ -92,7 +92,10 @@
             <ul id="navbar" class="navbar-nav fw-bold justify-content-end align-items-center flex-grow-1">
             {% for item in main_menu %}
               <li class="nav-item">
-                <a class="nav-link me-5" href="{{ item.url }}">{{ item.title }}</a>
+                  <a class="nav-link me-5 text-uppercase {% if active == item.url %}nav-selected fw-bold{% else %}text-hover{% endif %}" 
+                    href="/{{ item.url }}">
+                      {{ item.title }}
+                  </a>
               </li>
             {% endfor %}
             </ul>

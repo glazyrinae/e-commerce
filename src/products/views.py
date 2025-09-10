@@ -52,9 +52,8 @@ def products(request, category_slug):
 
 def load_more_content(request, category_slug):
     page_number = request.GET.get("page", 1)
-    items_per_page = 5  # Количество элементов на страницу
+    items_per_page = 5 
 
-    # Ваш основной queryset (пример с продуктами)
     products = (
         Products.objects.select_related("category")
         .filter(category__slug=category_slug)
@@ -64,7 +63,6 @@ def load_more_content(request, category_slug):
     paginator = Paginator(products, items_per_page)
     page_obj = paginator.get_page(page_number)
 
-    # Рендерим HTML для новых элементов
     html_content = render_to_string("ajax/items_partial.html", {"products": page_obj})
 
     return JsonResponse({"html": html_content, "has_next": page_obj.has_next()})

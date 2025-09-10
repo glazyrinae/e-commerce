@@ -994,6 +994,14 @@ a.text-hover:focus:after {
   padding: 0;
 }
 
+.navbar-nav .nav-item a.nav-selected{
+  font-weight: bold; /* Делает текст жирным */
+  text-decoration: underline; /* Добавляет стандартное подчеркивание */
+  text-underline-offset: 5px; /* Устанавливает отступ от текста */
+  text-decoration-color: var(--dark-color); /* Цвет линии */
+  text-decoration-thickness: 2px; /* Толщина линии */
+}
+
 /* - Offcanvas
 /*----------------------------------------------*/
 #header-nav .navbar-toggler:focus {

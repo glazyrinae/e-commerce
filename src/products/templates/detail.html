@@ -136,9 +136,9 @@
             
             <div class="d-flex gap-3 mb-4">
                 <div class="input-group" style="width: 120px;">
-                    <button class="btn btn-outline-secondary" type="button">-</button>
-                    <input type="text" class="form-control text-center" value="1">
-                    <button class="btn btn-outline-secondary" type="button">+</button>
+                    <button class="btn btn-outline-secondary btn-minus" type="button">-</button>
+                    <input type="text" class="form-control text-center cnt-good" readonly value="1">
+                    <button class="btn btn-outline-secondary btn-plus" type="button">+</button>
                 </div>
                 <button class="btn btn-danger flex-grow-1"><i class="bi bi-cart-fill me-2"></i>Добавить в корзину</button>
                 <button class="btn btn-outline-secondary"><i class="bi bi-heart"></i></button>
@@ -254,4 +254,37 @@
     </div>
 </div>
 </div>
+{% endblock %}
+
+{% block js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cnt = document.getElementsByClassName('cnt-good')[0];
+    const loadBtnMinus = document.getElementsByClassName('btn-minus')[0];
+    const loadBtnPlus = document.getElementsByClassName('btn-plus')[0];
+
+    if (loadBtnMinus && cnt) {
+        loadBtnMinus.addEventListener('click', minus_good);
+    } 
+
+    if (loadBtnPlus && cnt) {
+        loadBtnPlus.addEventListener('click', plus_good);
+    }   
+
+    function minus_good() {
+        let currentValue = parseInt(cnt.value) || 0;
+        if (currentValue > 0){
+            cnt.value = currentValue - 1;
+        } 
+    }
+
+    function plus_good() {
+        let currentValue = parseInt(cnt.value) || 0;
+        cnt.value = currentValue + 1;
+    }
+});
+</script>
+<script src="{% static "js/jquery-1.11.0.min.js" %}"></script> 
+<script src="{% static "js/plugins.js" %}"></script> 
+<script src="{% static "js/script.js" %}"></script> 
 {% endblock %}

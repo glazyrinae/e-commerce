@@ -12,7 +12,7 @@
       <div class="product-content padding-small">
         <div id="content-container" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5">
         {% for product in products %}
-          <div class="col mb-4 mb-3" style="cursor: pointer;" onclick="window.location.href='/{{ product.category }}/{{product.id}}'">
+          <div class="col mb-4 mb-3" style="cursor: pointer;" onclick="window.location.href='/{{ product.category.slug }}/{{product.id}}'">
             <div class="product-card position-relative">
                 <div class="card-img">
                 {% if product.images and product.get_path_image_thumbnail %}
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function loadMoreContent() {
         const nextPage = loadMoreBtn.dataset.nextPage;
-        const url = `load-more/male/?page=${nextPage}`;
+        const url = `/load-more/male/?page=${nextPage}`;
         
         // Показываем индикатор загрузки и скрываем кнопку
         loadMoreBtn.style.display = 'none';

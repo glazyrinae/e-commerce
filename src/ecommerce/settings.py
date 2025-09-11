@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'products.apps.ProductsConfig',
     'settings.apps.SettingsConfig',
+    'basket.apps.BasketConfig',
     'debug_toolbar',
 ]
 

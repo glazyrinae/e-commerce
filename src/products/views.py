@@ -7,9 +7,13 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
+# Главная
 def list_items(request):
-    return render(request, "items/list_items.html")
+    products = (
+        Products.objects.select_related("category")
+        .order_by('?')[:10]
+    )
+    return render(request, "items/list_items.html", {"featured_products": products[:5], "latest_products": products[5:10]})
 
 
 def product(request, category_slug, product_id):
@@ -46,7 +50,7 @@ def products(request, category_slug):
         return load_more_content(request, category_slug)
 
     return render(
-        request, "items/products.html", {"products": page_obj, "page_obj": page_obj}
+        request, "items/products.html", {"products": page_obj}
     )
 
 # AJAX

@@ -12,13 +12,13 @@
             <div class="product-content padding-small">
                 <div id="content-container" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5">
                 {% for product in products %}
-                <div class="col mb-4 mb-3" style="cursor: pointer;" onclick="window.location.href='/{{ product.category.slug }}/{{product.id}}'">
+                <div class="col mb-4 mb-3" style="cursor: pointer;">
                     <div class="product-card position-relative">
                         <div class="card-img">
                         {% if product.images and product.get_path_image_thumbnail %}
                             <img class="product-image img-fluid" alt="product-item" src="{{ MEDIA_URL }}{{  product.get_path_image_thumbnail }}" alt="image">
                         {% endif %}
-                        <!-- <div class="cart-concern position-absolute d-flex justify-content-center">
+                        <div class="cart-concern position-absolute d-flex justify-content-center">
                             <div class="cart-button d-flex gap-2 justify-content-center align-items-center">
                             <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#modallong">
                                 <svg class="shopping-carriage">
@@ -32,11 +32,10 @@
                             </button>
                             </div>
                         </div>
-                        cart-concern -->
                         </div>
                         <div class="card-detail d-flex justify-content-between align-items-center mt-3">
                         <h3 class="card-title fs-6 fw-normal m-0">
-                            <a href="index.html">{{ product.title }}</a>
+                            <a href="#">{{ product.title }}</a>
                         </h3>
                         <price class="card-price fw-bold">{{ product.price }} <span class="currency">₽</span></price>
                         </div>
@@ -47,10 +46,10 @@
         </div>
     </section>
 
-    {% if page_obj.has_next %}
+    {% if products.has_next %}
     <div class="d-flex justify-content-center">
         <button id="load-more-btn" class="load-more-button btn btn-primary px-4" 
-            data-next-page="{{ page_obj.next_page_number }}">
+            data-next-page="{{ products.next_page_number }}">
         Подгрузить еще
     </button>
     </div>

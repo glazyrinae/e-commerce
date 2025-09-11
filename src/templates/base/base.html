@@ -28,12 +28,18 @@
     {% include 'base/_preloader.html' %}
     {% include 'base/_search.html' %}
     {% include 'base/_header.html' %}
+
     <!-- Основное содержимое -->
-    <main class="container my-5">
-        {% block content %}
-        {% endblock %}
-    </main>
+    <!--<main class="container my-5">-->
+    {% block content %}
+    {% endblock %}
+    <!--</main>-->
     
+    <!-- Подключаем модальные окна -->
+    {% block modals %}
+        {% include 'modals/_products.html' %}
+    {% endblock modals %}
+
     <!-- Подключаем footer -->
     {% include 'base/_footer.html' %}
     

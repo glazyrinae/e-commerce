@@ -49,6 +49,24 @@ def products(request, category_slug):
         request, "items/products.html", {"products": page_obj, "page_obj": page_obj}
     )
 
+# AJAX
+def load_modal_content(request, category_slug):
+    page_number = request.GET.get("page", 1)
+    items_per_page = 5 
+
+    products = (
+        Products.objects.select_related("category")
+        .filter(category__slug=category_slug)
+        .order_by("-created_at")
+    )
+
+    paginator = Paginator(products, items_per_page)
+    page_obj = paginator.get_page(page_number)
+
+    html_content = render_to_string("ajax/items_partial.html", {"products": page_obj})
+
+    return JsonResponse({"html": html_content, "has_next": page_obj.has_next()})
+
 
 def load_more_content(request, category_slug):
     page_number = request.GET.get("page", 1)

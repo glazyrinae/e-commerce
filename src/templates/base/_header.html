@@ -104,17 +104,21 @@
         <div class="user-items ps-0 ps-md-5">
           <ul class="d-flex justify-content-end list-unstyled align-item-center m-0">
             <li class="pe-3">
-              <a href="login" data-bs-toggle="modal" data-bs-target="#modallogin" class="border-0">
+              <a href="#" data-bs-toggle="modal" data-bs-target="#modallogin" class="border-0">
                 <svg class="user" width="24" height="24">
                   <use xlink:href="#user"></use>
                 </svg>
               </a>
             </li>
             <li class="pe-3">
-              <a href="#" data-bs-toggle="modal" data-bs-target="#modallong" class="border-0">
+              <a href="/basket" class="border-0">
                 <svg class="shopping-cart" width="24" height="24">
                   <use xlink:href="#shopping-cart"></use>
                 </svg>
+                <span class="position-absolute top-40 start-70 translate-middle badge rounded-circle bg-dark text-white cart-count" 
+                      style="font-size: 0.7rem; min-width: 22px; height: 22px; line-height: 16px;">
+                  0
+                </span>
               </a>
             </li>
             <li>
@@ -129,5 +133,3 @@
       </div>
     </nav>
   </header>
-
-  {% include 'account/modal/login.html' %}

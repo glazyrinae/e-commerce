@@ -955,7 +955,7 @@ a.text-hover:focus:after {
 /* - Login
 /*----------------------------------------------*/
 #modallogin .modal-content {
-  background: url(images/login-bg.jpg)no-repeat;
+  background: url(../img/login-bg.jpg)no-repeat;
 }
 
 #modallogin .modal-content input.text-input {

@@ -7,3 +7,7 @@
   {% include 'base/_top_products.html' %}
   {% include 'base/_list_products.html' with objects=latest_products  title="Новинки" %}
 {% endblock %}
+
+{% block modal %}
+  {% include 'account/modal/login.html' %}
+{% endblock %}

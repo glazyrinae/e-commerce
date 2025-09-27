@@ -29,15 +29,19 @@
     {% include 'base/_search.html' %}
     {% include 'base/_header.html' %}
 
+    <!-- Модальные окна -->
+    {% block modal %}
+    {% endblock %}
+
     <!-- Основное содержимое -->
-    <!--<main class="container my-5">-->
+    <main class="container my-5">
     {% block content %}
     {% endblock %}
-    <!--</main>-->
+    </main>
 
     <!-- Подключаем footer -->
     {% include 'base/_footer.html' %}
-    
+
     <!-- Общие JS -->
     {% block js %}
       <script src="{% static "js/jquery-1.11.0.min.js" %}"></script> 

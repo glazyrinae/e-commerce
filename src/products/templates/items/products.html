@@ -15,23 +15,23 @@
                 <div class="col mb-4 mb-3" style="cursor: pointer;">
                     <div class="product-card position-relative">
                         <div class="card-img">
-                        {% if product.images and product.get_path_image_thumbnail %}
-                            <img class="product-image img-fluid" alt="product-item" src="{{ MEDIA_URL }}{{  product.get_path_image_thumbnail }}" alt="image">
-                        {% endif %}
-                        <div class="cart-concern position-absolute d-flex justify-content-center">
-                            <div class="cart-button d-flex gap-2 justify-content-center align-items-center">
-                            <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#modallong">
-                                <svg class="shopping-carriage">
-                                <use xlink:href="#shopping-carriage"></use>
-                                </svg>
-                            </button>
-                            <button type="button" class="btn btn-light" data-bs-target="#modaltoggle" data-bs-toggle="modal">
-                                <svg class="quick-view">
-                                <use xlink:href="#quick-view"></use>
-                                </svg>
-                            </button>
+                            {% if product.images and product.get_path_image_thumbnail %}
+                                <img class="product-image img-fluid" alt="product-item" src="{{ MEDIA_URL }}{{  product.get_path_image_thumbnail }}" alt="image">
+                            {% endif %}
+                            <div class="cart-concern position-absolute d-flex justify-content-center">
+                                <div class="cart-button d-flex gap-2 justify-content-center align-items-center">
+                                <button type="button" class="btn btn-light" data-bs-toggle="modal" data-product_id="{{product.id}}" data-bs-target="#modallong">
+                                    <svg class="shopping-carriage">
+                                        <use xlink:href="#shopping-carriage"></use>
+                                    </svg>
+                                </button>
+                                <button type="button" class="btn btn-light" data-bs-target="#modaltoggle" data-bs-toggle="modal">
+                                    <svg class="quick-view">
+                                        <use xlink:href="#quick-view"></use>
+                                    </svg>
+                                </button>
+                                </div>
                             </div>
-                        </div>
                         </div>
                         <div class="card-detail d-flex justify-content-between align-items-center mt-3">
                         <h3 class="card-title fs-6 fw-normal m-0">
@@ -61,23 +61,174 @@
 
 {% endblock %}
 
+{% block modal %}
+  {% include 'account/modal/login.html' %}
+  {% include 'basket/modal/basket.html' %}
+{% endblock %}
+
 {% block js %}
 <script>
+
+
 
 document.addEventListener('DOMContentLoaded', function() {
     const loadMoreBtn = document.getElementById('load-more-btn');
     const contentContainer = document.getElementById('content-container');
     const loadingIndicator = document.getElementById('loading-indicator');
+    const csrfToken = "{{ csrf_token }}";
+    const modalLong = document.getElementById('modallong');
     
     if (loadMoreBtn) {
         loadMoreBtn.addEventListener('click', loadMoreContent);
     } 
 
-    // window.addEventListener('scroll', function() {
-    //   if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
-    //     loadMoreContent();
-    //   }
-    // });   
+    // Event delegation для ВСЕГО документа или для модального окна
+    document.addEventListener('click', function(event) {
+        
+        // Проверяем, находится ли целевой элемент внутри модального окна
+        if (event.target.closest('#modallong')) {
+            // Увеличение количества (минус)
+            if (event.target.matches('.quantity-left-minus') || 
+                event.target.closest('.quantity-left-minus')) {
+                const button = event.target.matches('.quantity-left-minus') ? 
+                    event.target : event.target.closest('.quantity-left-minus');
+                handleQuantityMinus(button);
+            }
+            
+            // Уменьшение количества (плюс)
+            if (event.target.matches('.quantity-right-plus') || 
+                event.target.closest('.quantity-right-plus')) {
+                const button = event.target.matches('.quantity-right-plus') ? 
+                    event.target : event.target.closest('.quantity-right-plus');
+                handleQuantityPlus(button);
+            }
+        }
+    });
+
+    function handleQuantityMinus(button) {
+        const input = button.closest('.input-group').querySelector('.form-control');
+        const cartCount = document.getElementsByClassName('cart-count')[0];
+        let cnt = parseInt(cartCount.innerHTML) || 0
+        let currentValue = parseInt(input.value) || 0;
+        if (cnt >= 1) {
+            cartCount.innerHTML = cnt - 1
+        }
+        if (currentValue >= 1) {
+            input.value = currentValue - 1;
+            updateQuantity(input);
+        }
+    }
+
+    function handleQuantityPlus(button) {
+        const input = button.closest('.input-group').querySelector('.form-control');
+        const cartCount = document.getElementsByClassName('cart-count')[0];
+        let cnt = parseInt(cartCount.innerHTML) || 0
+        let currentValue = parseInt(input.value) || 0;
+        input.value = currentValue + 1;
+        cartCount.innerHTML = cnt + 1
+        updateQuantity(input);
+    }
+
+    function updateQuantity(input) {
+        // Здесь можно отправить AJAX запрос для обновления количества
+        console.log('Новое количество:', input.value);
+        //input.dataset.itemId; 
+        const prodId = input.getAttribute('data-prodId'); 
+        alert(prodId)
+        fetch(`/basket/cart/${prodId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({"quantity":input.value})
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Ответ от сервера:', data);
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+        });
+        // fetch(...) для обновления на сервере
+    }
+
+    modalLong.addEventListener('show.bs.modal', function(event) {
+        // event.relatedTarget - кнопка, которая открыла модальное окно
+        const button = event.relatedTarget;
+        const productId = button.getAttribute('data-product_id');
+        
+        // Выполняем действия перед открытием
+        console.log('Открываем модальное окно для товара:', productId);
+        
+        // Пример: загружаем данные товара
+        fetch(`/basket/cart/${productId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(product => {
+            document.getElementById('modalProductContent').innerHTML = `
+              <div class="mini-cart cart-list p-0 mt-3">
+                <div class="mini-cart-item d-flex pb-3">
+                  <div class="col-lg-2 col-md-3 col-sm-2 me-4">
+                      <a href="#" title="product-image">
+                      <img src='${product.img}' class="img-fluid" alt="single-product-item">
+                      </a>
+                  </div>
+                  <div class="col-lg-9 col-md-8 col-sm-8">
+                      <div class="product-header d-flex justify-content-between align-items-center mb-3">
+                      <h4 class="product-title fs-6 me-5">${product.name}</h4>
+                      </div>
+                      <div class="quantity-price d-flex justify-content-between align-items-center">
+                      <div class="input-group product-qty">
+                          <button type="button"
+                          class="quantity-left-minus btn btn-light rounded-0 rounded-start btn-number"
+                          data-type="minus">
+                              <svg width="16" height="16">
+                                  <use xlink:href="#minus"></use>
+                              </svg>
+                          </button>
+                          <input type="text" name="quantity" class="form-control input-number quantity" data-prodId="${product.id}" value="${product.quantity}" />
+                          <button type="button" class="quantity-right-plus btn btn-light rounded-0 rounded-end btn-number"
+                          data-type="plus">
+                          <svg width="16" height="16">
+                              <use xlink:href="#plus"></use>
+                          </svg>
+                          </button>
+                      </div>
+                      <div class="price-code">
+                          <span class="product-price fs-6">${product.price}</span>
+                      </div>
+                      </div>
+                      <!-- quantity-price -->
+                  </div>
+                </div>
+              </div>
+            <div class="modal-footer my-4 justify-content-center">
+                <button type="button" class="btn btn-red hvr-sweep-to-right dark-sweep">Заказать</button>
+                <button type="button"
+                class="btn btn-outline-gray hvr-sweep-to-right dark-sweep">Перейти в корзину</button>
+            </div>
+            `;
+        })
+        .catch(error => {
+            console.error('Ошибка загрузки товара:', error);
+            document.getElementById('modalProductContent').innerHTML = `
+                <div class="alert alert-danger">
+                    Ошибка загрузки товара
+                </div>
+            `;
+        });
+        
+        // Можно отменить открытие, если нужно
+        // event.preventDefault();
+    });
 
     function loadMoreContent() {
         const nextPage = loadMoreBtn.dataset.nextPage;

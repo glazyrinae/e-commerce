@@ -7,16 +7,19 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 # Главная
 def list_items(request):
-    products = (
-        Products.objects.select_related("category")
-        .order_by('?')[:10]
+    products = Products.objects.select_related("category").order_by("?")[:10]
+    return render(
+        request,
+        "items/list_items.html",
+        {"featured_products": products[:5], "latest_products": products[5:10]},
     )
-    return render(request, "items/list_items.html", {"featured_products": products[:5], "latest_products": products[5:10]})
 
 
 def product(request, category_slug, product_id):
+    del request.session["cart"]
     product = get_object_or_404(
         Products.objects.select_related("category"),
         category__slug=category_slug,
@@ -49,14 +52,13 @@ def products(request, category_slug):
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         return load_more_content(request, category_slug)
 
-    return render(
-        request, "items/products.html", {"products": page_obj}
-    )
+    return render(request, "items/products.html", {"products": page_obj})
+
 
 # AJAX
 def load_modal_content(request, category_slug):
     page_number = request.GET.get("page", 1)
-    items_per_page = 5 
+    items_per_page = 5
 
     products = (
         Products.objects.select_related("category")
@@ -74,7 +76,7 @@ def load_modal_content(request, category_slug):
 
 def load_more_content(request, category_slug):
     page_number = request.GET.get("page", 1)
-    items_per_page = 5 
+    items_per_page = 5
 
     products = (
         Products.objects.select_related("category")

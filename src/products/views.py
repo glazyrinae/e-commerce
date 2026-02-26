@@ -9,53 +9,46 @@ logger = logging.getLogger(__name__)
 
 
 # Главная
-# Главная
 def list_items(request):
     products = Products.get_random_with_details(10)
 
-    # Формируем список товаров с обработанными данными
     available_products = []
     for product in products:
-        # Один проход по store для сбора всех данных
-        sizes = []
-        colors = set()  # set для уникальных цветов
-        total_cnt = 0
+        store_items = list(product.store.all())
 
-        for store_item in product.store.all():
-            sizes.append(str(store_item.size.size))
-            if store_item.color:
-                colors.add(store_item.color.title)
-            total_cnt += store_item.cnt
+        # Группируем store по цветам для шаблона
+        colors_grouped = {}
+        for item in store_items:
+            color = item.color.title if item.color else "Без цвета"
+            if color not in colors_grouped:
+                colors_grouped[color] = []
+            colors_grouped[color].append(
+                {"size": item.size.size, "cnt": item.cnt, "store_id": item.id}
+            )
 
         available_products.append(
             {
                 "product": product,
                 "product_title": product.title,
                 "product_category": product.category.title,
-                "product_sizes": ", ".join(
-                    sorted(set(sizes))
-                ),  # уникальные, сортированные
-                "product_colors": ", ".join(sorted(colors)),  # уникальные цвета
-                "product_total_cnt": total_cnt,
+                "product_total_cnt": sum(item.cnt for item in store_items),
+                "store_items": store_items,  # все позиции
+                "colors_grouped": colors_grouped,  # сгруппированные по цветам
             }
         )
-
-    # Разделяем на featured и latest
-    featured_products = available_products[:5]
-    latest_products = available_products[5:10]
 
     return render(
         request,
         "items/list_items.html",
         {
-            "featured_products": featured_products,
-            "latest_products": latest_products,
+            "featured_products": available_products[:5],
+            "latest_products": available_products[5:10],
         },
     )
 
 
 def product(request, category_slug, product_id):
-    del request.session["cart"]
+    # del request.session["cart"]
     product = get_object_or_404(
         Products.objects.select_related("category"),
         category__slug=category_slug,

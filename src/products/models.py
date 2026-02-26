@@ -10,8 +10,8 @@ class Categories(models.Model):
     class Meta:
         ordering = ["title"]
         indexes = [models.Index(fields=["title"])]
-        verbose_name = "category"
-        verbose_name_plural = "categories"
+        verbose_name = "Категория"
+        verbose_name_plural = "Категории"
 
     def __str__(self):
         return self.title
@@ -20,12 +20,20 @@ class Categories(models.Model):
 class Colors(models.Model):
     title = models.CharField(max_length=250, unique=True)
 
+    class Meta:
+        verbose_name = "Цвет"
+        verbose_name_plural = "Цвета"
+
     def __str__(self):
         return self.title
 
 
 class Sizes(models.Model):
     size = models.SmallIntegerField(unique=True)
+
+    class Meta:
+        verbose_name = "Размер"
+        verbose_name_plural = "Размеры"
 
     def __str__(self):
         return f"{self.size}"
@@ -151,6 +159,7 @@ class Products(models.Model):
 
     title = models.CharField(max_length=250, default="", unique=True)
     desc = models.TextField(default="")
+
     slug = models.SlugField(max_length=250, default=None)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=None)
     category = models.ForeignKey(
@@ -208,6 +217,18 @@ class Products(models.Model):
             .first()
         ) or "empty.png"
 
+    @classmethod
+    def get_random_with_details(cls, count=10):
+        return (
+            cls.objects.select_related("category")
+            .prefetch_related(
+                models.Prefetch(
+                    "store", queryset=Store.objects.select_related("color", "size")
+                )
+            )
+            .order_by("?")[:count]
+        )
+
     class Meta:
         ordering = ["created_at"]
         indexes = [
@@ -215,13 +236,15 @@ class Products(models.Model):
             models.Index(fields=["title"]),
             models.Index(fields=["-created_at"]),
         ]
+        verbose_name = "Товар"
+        verbose_name_plural = "Товары"
 
     def __str__(self):
         return self.title
 
 
 class Store(models.Model):
-    
+
     color = models.ForeignKey(
         Colors, related_name="store", on_delete=models.SET_NULL, null=True
     )
@@ -240,6 +263,8 @@ class Store(models.Model):
                 name="unique_variant_color_size_product",
             )
         ]
+        verbose_name = "Наличие товара"
+        verbose_name_plural = "Наличие товаров"
 
     def __str__(self):
         return "store"

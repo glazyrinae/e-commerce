@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
+
 import os, dj_database_url
 from pathlib import Path
 from environs import Env
@@ -31,63 +32,61 @@ DEBUG = env.bool("DEBUG")
 
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
 INTERNAL_IPS = [
-    '127.0.0.1',
+    "127.0.0.1",
 ]
 
 # Принудительно включить для всех IP (небезопасно, только для разработки!)
-DEBUG_TOOLBAR_CONFIG = {
-    "SHOW_TOOLBAR_CALLBACK": lambda request: True
-}
+DEBUG_TOOLBAR_CONFIG = {"SHOW_TOOLBAR_CALLBACK": lambda request: True}
 
 # Application definition
 
 INSTALLED_APPS = [
-    'account.apps.AccountConfig',
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'products.apps.ProductsConfig',
-    'settings.apps.SettingsConfig',
-    'basket.apps.BasketConfig',
-    'debug_toolbar',
+    "account.apps.AccountConfig",
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "products.apps.ProductsConfig",
+    "settings.apps.SettingsConfig",
+    "basket.apps.BasketConfig",
+    #'debug_toolbar',
 ]
 
 MIDDLEWARE = [
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'ecommerce.core.middleware.AnonymousRequiredMiddleware',
+    # "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "ecommerce.core.middleware.AnonymousRequiredMiddleware",
 ]
 
-ROOT_URLCONF = 'ecommerce.urls'
+ROOT_URLCONF = "ecommerce.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-                'django.template.context_processors.media',
-                'settings.context_processors.site_settings',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [os.path.join(BASE_DIR, "templates")],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "django.template.context_processors.media",
+                "settings.context_processors.site_settings",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'ecommerce.wsgi.application'
+WSGI_APPLICATION = "ecommerce.wsgi.application"
 
 
 # Database
@@ -102,9 +101,9 @@ DATABASES = {
     #     "HOST": os.getenv("SQL_HOST", "localhost"),
     #     "PORT": os.getenv("SQL_PORT", "5432"),
     # }
-    'default': dj_database_url.parse(
-        os.getenv('DATABASE_URL'),
-        engine='django.db.backends.postgresql',
+    "default": dj_database_url.parse(
+        os.getenv("DATABASE_URL"),
+        engine="django.db.backends.postgresql",
         # conn_max_age=600,
         # conn_health_checks=True,
         # ssl_require=not DEBUG
@@ -116,16 +115,16 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -133,9 +132,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -145,25 +144,25 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = "static/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
-MEDIA_URL = 'media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = "media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-LOGIN_REDIRECT_URL = 'list_items'
-LOGIN_URL = 'login'
-LOGOUT_URL = 'logout'
+LOGIN_REDIRECT_URL = "list_items"
+LOGIN_URL = "login"
+LOGOUT_URL = "logout"
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-#EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = env.str("EMAIL_HOST")
 EMAIL_PORT = env.int("EMAIL_PORT")
 EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS")
@@ -172,11 +171,10 @@ EMAIL_HOST_PASSWORD = env.str("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL")
 
 
-
 # LOGGING = {
 #     'version': 1,
 #     'disable_existing_loggers': False,
-    
+
 #     # Форматтеры (как будут выглядеть записи)
 #     'formatters': {
 #         'verbose': {
@@ -188,7 +186,7 @@ DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL")
 #             'style': '{',
 #         },
 #     },
-    
+
 #     # Обработчики (куда пишем логи)
 #     'handlers': {
 
@@ -201,7 +199,7 @@ DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL")
 #             'class': 'logging.StreamHandler',
 #             'formatter': 'simple',
 #         },
-        
+
 #         # Файловый обработчик для приложения "products_file"
 #         'products_file': {
 #             'class': 'logging.FileHandler',
@@ -210,7 +208,7 @@ DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL")
 #             # 'backupCount': 3,  # хранить 3 файла (shop.log, shop.log.1, ...)
 #             'formatter': 'verbose',
 #         },
-        
+
 #         # Файловый обработчик для приложения "account_file"
 #         'account_file': {
 #             'class': 'logging.FileHandler',
@@ -219,7 +217,7 @@ DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL")
 #             # 'backupCount': 3,  # хранить 3 файла (shop.log, shop.log.1, ...)
 #             'formatter': 'verbose',
 #         },
-        
+
 #         # Можно добавить обработчик для ошибок
 #         'error_file': {
 #             'class': 'logging.FileHandler',
@@ -230,14 +228,14 @@ DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL")
 #             'formatter': 'verbose',
 #         },
 #     },
-    
+
 #     # Настройки логгеров для каждого приложения
 #     'loggers': {
 #         'django': {
 #             'handlers': ['console'],
 #             'level': 'INFO',
 #         },
-        
+
 #         'django.db.backends': {
 #             'handlers': ['console'],
 #             'level': 'DEBUG',
@@ -249,14 +247,14 @@ DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL")
 #             'level': 'DEBUG',
 #             'propagate': False,  # не дублировать в родительских логгерах
 #         },
-        
+
 #         # Логи приложения "account" (только в файл)
 #         'account': {
 #             'handlers': ['console', 'account_file'],
 #             'level': 'INFO',
 #             'propagate': False,
 #         },
-        
+
 #         # Логи ошибок (все ошибки Django и приложений)
 #         'django.request': {
 #             'handlers': ['error_file'],
@@ -267,17 +265,17 @@ DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL")
 # }
 
 DEBUG_TOOLBAR_PANELS = [
-    'debug_toolbar.panels.history.HistoryPanel',
-    'debug_toolbar.panels.versions.VersionsPanel',
-    'debug_toolbar.panels.timer.TimerPanel',
-    'debug_toolbar.panels.settings.SettingsPanel',
-    'debug_toolbar.panels.headers.HeadersPanel',
-    'debug_toolbar.panels.request.RequestPanel',
-    'debug_toolbar.panels.sql.SQLPanel',
-    'debug_toolbar.panels.staticfiles.StaticFilesPanel',
-    'debug_toolbar.panels.templates.TemplatesPanel',
-    'debug_toolbar.panels.cache.CachePanel',
-    'debug_toolbar.panels.signals.SignalsPanel',
-    'debug_toolbar.panels.logging.LoggingPanel',
-    'debug_toolbar.panels.redirects.RedirectsPanel',
+    "debug_toolbar.panels.history.HistoryPanel",
+    "debug_toolbar.panels.versions.VersionsPanel",
+    "debug_toolbar.panels.timer.TimerPanel",
+    "debug_toolbar.panels.settings.SettingsPanel",
+    "debug_toolbar.panels.headers.HeadersPanel",
+    "debug_toolbar.panels.request.RequestPanel",
+    "debug_toolbar.panels.sql.SQLPanel",
+    "debug_toolbar.panels.staticfiles.StaticFilesPanel",
+    "debug_toolbar.panels.templates.TemplatesPanel",
+    "debug_toolbar.panels.cache.CachePanel",
+    "debug_toolbar.panels.signals.SignalsPanel",
+    "debug_toolbar.panels.logging.LoggingPanel",
+    "debug_toolbar.panels.redirects.RedirectsPanel",
 ]

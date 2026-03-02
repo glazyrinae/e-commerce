@@ -1,12 +1,33 @@
-Django==5
+# Основные зависимости
+Django==6.0.2  # Стабильная версия (последний патч от февраля 2026) [citation:9]
 gunicorn==21.2.0
-psycopg2-binary==2.9.6
-django-taggit==3.0.0
-Pillow==9.2.0
-markdown==3.4.1
-#django-db-logger==0.1.13
-marshmallow==3.19.0
-environs[django]>=9.0.0
-dj-database-url==1.2.0
+psycopg2-binary>=2.9.9,<2.10  # Требуется 2.9.9+ для совместимости с Python 3.12+ [citation:4]
+
+# Медиа и изображения
+Pillow>=10.1.0,<11.0.0  # Минимальная версия для Python 3.12 с Django 6.0 [citation:4]
+
+# Django расширения
 django-extensions==3.2.1
 django-debug-toolbar==5.2.0
+
+# База данных
+dj-database-url==1.2.0
+
+# Работа с тегами
+django-taggit==3.0.0
+
+# Конфигурация и переменные окружения
+environs[django]>=9.0.0
+
+# Сериализация/валидация
+marshmallow==3.19.0
+
+# Markdown поддержка
+markdown==3.4.1
+
+# Логирование (раскомментировать если нужно)
+# django-db-logger==0.1.13
+
+ruff
+python-lsp-server[all]
+pylsp-mypy

@@ -1,0 +1,172 @@
+# pyproject.toml
+# Единый файл конфигурации для проекта E-commerce
+
+[project]
+name = "e-commerce"
+version = "0.1.0"
+description = "Интернет-магазин обуви на Django"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [
+    { name = "Your Name", email = "your.email@example.com" },
+]
+
+dependencies = [
+    # Основные зависимости
+    "Django==6.0.2",
+    "gunicorn==21.2.0",
+    "psycopg2-binary>=2.9.9,<2.10",
+    # Медиа и изображения
+    "Pillow>=10.1.0,<11.0.0",
+    # Django расширения
+    "django-extensions==3.2.1",
+    "django-debug-toolbar==5.2.0",
+    # База данных
+    "dj-database-url==1.2.0",
+    # Работа с тегами
+    "django-taggit==3.0.0",
+    # Конфигурация и переменные окружения
+    "environs[django]>=9.0.0",
+    # Сериализация/валидация
+    "marshmallow==3.19.0",
+    # Markdown поддержка
+    "markdown==3.4.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.11.0",
+    "python-lsp-server[all]>=1.14.0",
+    "pylsp-mypy>=0.6.0",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+# =============================================================================
+# НАСТРОЙКИ ИНСТРУМЕНТОВ
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Pylance / Pyright (замена pyrightconfig.json)
+# -----------------------------------------------------------------------------
+[tool.pyright]
+include = ["src"]
+exclude = [
+    "**/node_modules",
+    "**/__pycache__",
+    "**/migrations/**",
+    "**/.venv/**",
+    "**/venv/**",
+    "**/env/**",
+    "**/.*",           # Добавлено: скрытые файлы и папки
+    "**/.*/**",        # Добавлено: содержимое скрытых папок
+    "**/__pycache__/**", # Добавлено: всё внутри __pycache__
+    "**/*.pyc",        # Добавлено: скомпилированные файлы
+]
+extraPaths = ["./src"]
+venvPath = "."
+venv = ".venv"
+pythonVersion = "3.12"
+typeCheckingMode = "basic"
+reportMissingImports = "warning"
+reportMissingModuleSource = "warning"
+
+# -----------------------------------------------------------------------------
+# Ruff (замена ruff.toml)
+# -----------------------------------------------------------------------------
+[tool.ruff]
+# Версия Python и настройки форматирования
+target-version = "py312"
+line-length = 88
+indent-width = 4
+
+# Включить автоматическое исправление
+fix = true
+
+# Настройки линтера
+[tool.ruff.lint]
+# Базовый набор правил (как у Flake8)
+select = [
+    "E",   # pycodestyle ошибки
+    "W",   # pycodestyle предупреждения
+    "F",   # pyflakes
+    "I",   # isort (сортировка импортов)
+    "UP",  # pyupgrade (современный синтаксис)
+]
+
+# Игнорировать некоторые правила
+ignore = [
+    "E501",  # длинные строки (ruff format сам решит)
+]
+
+# Автоисправляемые правила
+fixable = ["ALL"]
+
+# Сортировка импортов (isort)
+[tool.ruff.lint.isort]
+combine-as-imports = true
+force-single-line = false
+
+# Настройки форматирования
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+# -----------------------------------------------------------------------------
+# Mypy (проверка типов)
+# -----------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+warn_return_any = true
+warn_unused_configs = true
+strict_optional = true
+
+# -----------------------------------------------------------------------------
+# Python LSP Server (pylsp) - ИСПРАВЛЕНО!
+# -----------------------------------------------------------------------------
+[tool.pylsp]
+plugins.pylsp_mypy.enabled = true
+plugins.pylsp_mypy.live_mode = true
+plugins.ruff.enabled = true
+plugins.ruff.formatEnabled = true
+
+# -----------------------------------------------------------------------------
+# Настройки для pytest (если будете использовать)
+# -----------------------------------------------------------------------------
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = [
+    "tests",
+    "src/tests",
+]
+python_files = ["test_*.py", "*_tests.py"]
+addopts = "-ra -q --strict-markers"
+
+# -----------------------------------------------------------------------------
+# Настройки coverage (покрытие кода)
+# -----------------------------------------------------------------------------
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "*/tests/*",
+    "*/migrations/*",
+    "*/test_*.py",
+    "*_tests.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if __name__ == .__main__.:",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if False:",
+]

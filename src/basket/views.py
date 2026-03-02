@@ -1,9 +1,11 @@
-from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse
-from products.models import Products
-from django.conf import settings
-import logging
 import json
+import logging
+
+from django.conf import settings
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, render
+
+from products.models import Products
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +32,7 @@ def cart(request, product_id):
     product_id_str = str(product_id)
     cart_preview = {
         product_id_str: {
-            "id": product.id,
+            "id": product.pk,
             "name": product.title,
             "img": f"{settings.MEDIA_URL}{product.get_path_image_thumbnail}",
             "price": str(product.price),

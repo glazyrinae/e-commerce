@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>{% block title %}Мой сайт{% endblock %}</title>
+  <title>{% block title %}{{ title }}{% endblock %}</title>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,10 +10,10 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="author" content="TemplatesJungle">
   <meta name="keywords" content="Online Store">
-  <meta name="description" content="Stylish - Shoes Online Store HTML Template">
-
-  <link rel="stylesheet" href="{% static "css/vendor.css" %}"">
-  <link rel="stylesheet" href="{% static "css/style.css" %}"">
+  <meta name="description" content="{{ description }}">
+  <link rel="icon" type="image/x-icon" href="{% static "img/favicon.ico" %}">
+  <link rel="stylesheet" href="{% static "css/vendor.css" %}">
+  <link rel="stylesheet" href="{% static "css/style.css" %}">
   {% block css %}
   {% endblock %}
   <link rel="preconnect" href="https://fonts.googleapis.com">

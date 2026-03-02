@@ -1,18 +1,91 @@
+# Python
 *.pyc
-.env
+*.pyo
+*.pyd
+__pycache__/
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.log
 
-app/Dockerfile
-data/
-src/blog/migrations/*
-src/static/*
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Static files
+app/static/admin/*
+staticfiles/
+static_root/
+media_root/
+
+# Media files
+app/media/*
 media/*
-logs/*
+
+# Migrations
+app/blog/migrations/*
+app/search/migrations/*
+app/settings/migrations/*
+!app/*/migrations/__init__.py
+
+# Database
+data/
+*.db
+
+# IDE - персональные настройки (НЕ конфиги проекта!)
 .vscode/
+.zed/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Certificates & Nginx
+certbot/*
+!certbot/.gitkeep
+
+# Logs
+logs/*
+!logs/.gitkeep
+*.log
+
+# Environment variables
 .env
-deploy/db_data
-deploy/db_backup
-deploy/redis_data
-deploy/node_modules/
-# TODO: раскомментить, т.к лок-файлы - необходимость!
-deploy/package-lock.json 
-docker-compose.local.yml
+.env.dev
+.env.prod
+.env.local
+.env.*.local
+*.secret
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Documentation
+docs/_build/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+
+deploy/db_data/
+deploy/db_backup/
+deploy/socket/

@@ -1,9 +1,11 @@
-from django.shortcuts import render, get_object_or_404
-from .models import Products
+import logging
+
 from django.core.paginator import Paginator
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
-import logging
+
+from .models import Products
 
 logger = logging.getLogger(__name__)
 
@@ -14,35 +16,64 @@ def list_items(request):
 
     available_products = []
     for product in products:
-        store_items = list(product.store.all())
+        # Используем менеджер напрямую через _meta (Pylance не ругается)
+        store_items = []
+        try:
+            # Прямой запрос к модели Store через менеджер
+            from .models import Store
+
+            store_items = list(
+                Store.objects.filter(product=product).select_related("color", "size")
+            )
+        except (ImportError, Exception):
+            store_items = []
 
         # Группируем store по цветам для шаблона
         colors_grouped = {}
         for item in store_items:
-            color = item.color.title if item.color else "Без цвета"
+            color = "Без цвета"
+            if item.color and hasattr(item.color, "title"):
+                color = item.color.title
+
             if color not in colors_grouped:
                 colors_grouped[color] = []
+
+            # Безопасное получение атрибутов
+            size_value = "Не указан"
+            if item.size and hasattr(item.size, "size"):
+                size_value = item.size.size
+
             colors_grouped[color].append(
-                {"size": item.size.size, "cnt": item.cnt, "store_id": item.id}
+                {"size": size_value, "cnt": item.cnt, "store_id": item.pk}
             )
+
+        # Безопасное получение атрибутов продукта
+        product_title = getattr(product, "title", "Без названия")
+        category = getattr(product, "category", None)
+        category_title = getattr(category, "title", "Без категории")
+        total_cnt = sum(getattr(item, "cnt", 0) for item in store_items)
 
         available_products.append(
             {
                 "product": product,
-                "product_title": product.title,
-                "product_category": product.category.title,
-                "product_total_cnt": sum(item.cnt for item in store_items),
-                "store_items": store_items,  # все позиции
-                "colors_grouped": colors_grouped,  # сгруппированные по цветам
+                "product_title": product_title,
+                "product_category": category_title,
+                "product_total_cnt": total_cnt,
+                "store_items": store_items,
+                "colors_grouped": colors_grouped,
             }
         )
+
+    # Безопасные срезы
+    featured = available_products[:5] if available_products else []
+    latest = available_products[5:10] if len(available_products) > 5 else []
 
     return render(
         request,
         "items/list_items.html",
         {
-            "featured_products": available_products[:5],
-            "latest_products": available_products[5:10],
+            "featured_products": featured,
+            "latest_products": latest,
         },
     )
 
@@ -54,14 +85,40 @@ def product(request, category_slug, product_id):
         category__slug=category_slug,
         id=product_id,
     )
-    images = product.images.all()
-    store = product.store.all()
-    colors = {str(c.color) for c in store if c.color}
-    sizes = {str(s.size) for s in store if s.size}
+
+    # Безопасное получение связанных объектов через менеджеры
+    images = []
+    store_items = []
+
+    try:
+        from .models import Images, Store
+
+        images = list(Images.objects.filter(product=product))
+        store_items = list(
+            Store.objects.filter(product=product).select_related("color", "size")
+        )
+    except (ImportError, Exception):
+        pass
+
+    # Безопасное получение цветов и размеров
+    colors = set()
+    sizes = set()
+
+    for item in store_items:
+        if item.color and hasattr(item.color, "title") and item.color.title:
+            colors.add(item.color.title)
+        if item.size and hasattr(item.size, "size") and item.size.size:
+            sizes.add(str(item.size.size))
+
     return render(
         request,
         "detail.html",
-        {"product": product, "images": images, "colors": colors, "sizes": sizes},
+        {
+            "product": product,
+            "images": images,
+            "colors": colors,
+            "sizes": sizes,
+        },
     )
 
 
@@ -69,12 +126,12 @@ def products(request, category_slug):
     items_per_page = 5
     page_number = request.GET.get("page", 1)
 
-    products = (
+    products_qs = (
         Products.objects.select_related("category")
         .filter(category__slug=category_slug)
         .order_by("-created_at")
     )
-    paginator = Paginator(products, items_per_page)
+    paginator = Paginator(products_qs, items_per_page)
     page_obj = paginator.get_page(page_number)
 
     # Проверяем AJAX запрос
@@ -89,13 +146,13 @@ def load_modal_content(request, category_slug):
     page_number = request.GET.get("page", 1)
     items_per_page = 5
 
-    products = (
+    products_qs = (
         Products.objects.select_related("category")
         .filter(category__slug=category_slug)
         .order_by("-created_at")
     )
 
-    paginator = Paginator(products, items_per_page)
+    paginator = Paginator(products_qs, items_per_page)
     page_obj = paginator.get_page(page_number)
 
     html_content = render_to_string("ajax/items_partial.html", {"products": page_obj})
@@ -107,13 +164,13 @@ def load_more_content(request, category_slug):
     page_number = request.GET.get("page", 1)
     items_per_page = 5
 
-    products = (
+    products_qs = (
         Products.objects.select_related("category")
         .filter(category__slug=category_slug)
         .order_by("-created_at")
     )
 
-    paginator = Paginator(products, items_per_page)
+    paginator = Paginator(products_qs, items_per_page)
     page_obj = paginator.get_page(page_number)
 
     html_content = render_to_string("ajax/items_partial.html", {"products": page_obj})

@@ -46,12 +46,14 @@
                 <a href="#">Contact</a>
               </li>-->
               <li>
-                <span>you are logged {{ request.user.first_name|default:request.user.username }}</span>
+                <span>Привет, {{ request.user.first_name|default:request.user.username }}</span>
               </li>
               <li>
-              <form action="{% url 'logout' %}" method="post">
+              <form action="{% url 'logout' %}" method="post" class="m-0 d-inline">
                  {% csrf_token %}
-                  <p><input type="submit" value="Logout"></p>
+                  <button type="submit" class="btn btn-small btn-black text-uppercase hvr-sweep-to-right">
+                    Выйти
+                  </button>
               </form>
               </li>
             </ul>
@@ -60,7 +62,7 @@
           <div class="col">
             <ul class="d-flex justify-content-end gap-3 list-unstyled m-0">
               <li>
-                <a href="{% url 'login' %}">Login</a>
+                <a class="btn btn-small btn-black text-uppercase hvr-sweep-to-right" href="{% url 'login' %}">Войти</a>
               </li>
               <li>
             </ul>
@@ -91,12 +93,18 @@
           <div class="offcanvas-body">
             <ul id="navbar" class="navbar-nav fw-bold justify-content-end align-items-center flex-grow-1">
             {% for item in main_menu %}
-              <li class="nav-item">
-                  <a class="nav-link me-5 text-uppercase {% if active == item.url %}nav-selected fw-bold{% else %}text-hover{% endif %}" 
-                    href="/{{ item.url }}">
-                      {{ item.title }}
-                  </a>
-              </li>
+              {% with category=item.category %}
+                <li class="nav-item">
+                  {% if category %}
+                    <a class="nav-link me-5 text-uppercase {% if active == category.slug %}nav-selected fw-bold{% else %}text-hover{% endif %}" 
+                      href="/{{ category.slug }}">
+                        {{ category.title }}
+                    </a>
+                  {% else %}
+                    <span class="nav-link me-5 text-uppercase text-muted">(пусто)</span>
+                  {% endif %}
+                </li>
+              {% endwith %}
             {% endfor %}
             </ul>
           </div>

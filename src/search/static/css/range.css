@@ -1,0 +1,27 @@
+@import url('main.css');
+
+.range-slider-wrapper {
+    border-radius: 0.375rem;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+/* Accordion: без зелёного фона/подсветки в активном состоянии и без изменения оформления текста */
+.range-accordion .accordion-button:focus {
+    box-shadow: none;
+}
+.range-accordion .accordion-button:not(.collapsed) {
+    color: inherit;
+    background-color: transparent;
+    box-shadow: none;
+}
+.slider-container {
+    padding: 15px;
+    border-radius: 5px;
+}
+.d-flex justify-content-between mt-2 {
+    display: none !important;
+}
+/* Основные стили для слайдера */
+.noUi-connect {
+    background: #5FCB71; /* Цвет заполненной части */
+}

@@ -9,6 +9,8 @@ __pycache__/
 dist/
 build/
 *.log
+*.mypy_cache
+*.ruff_cache
 
 # Virtual Environment
 .venv/

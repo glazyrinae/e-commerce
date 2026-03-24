@@ -1,0 +1,6 @@
+.search-field-accordion .accordion-button:focus { box-shadow: none; }
+.search-field-accordion .accordion-button:not(.collapsed) {
+    color: inherit;
+    background-color: transparent;
+    box-shadow: none;
+}

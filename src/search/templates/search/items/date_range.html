@@ -1,0 +1,68 @@
+{% load sekizai_tags static search_tags %}
+
+{% addtoblock "css" %}
+    <link rel="stylesheet" href="{% static "css/src/bootstrap-datepicker.min.css" %}">
+    <link rel="stylesheet" href="{% static "css/date_range.css" %}">
+{% endaddtoblock %}
+{% addtoblock "js_footer" %}
+    <script src="{% static 'js/src/bootstrap-datepicker.min.js' %}"></script>
+    <script src="{% static 'js/src/bootstrap-datepicker.ru.min.js' %}"></script>
+    <script src="{% static 'js/date_range.js' %}"></script>
+{% endaddtoblock %}
+
+{% with min_key=field.field_name|add:"_min" max_key=field.field_name|add:"_max" %}
+{% with start_min=filters|dict_get:min_key start_max=filters|dict_get:max_key %}
+<div class="accordion accordion-flush mb-2 search-field-accordion">
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="date-heading-{{ field.id }}">
+            <button class="accordion-button py-2{% if not start_min and not start_max %} collapsed{% endif %}"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#date-collapse-{{ field.id }}"
+                    aria-expanded="{% if start_min or start_max %}true{% else %}false{% endif %}"
+                    aria-controls="date-collapse-{{ field.id }}">
+                {{ field.label }}
+            </button>
+        </h2>
+        <div id="date-collapse-{{ field.id }}"
+             class="accordion-collapse collapse{% if start_min or start_max %} show{% endif %}"
+             aria-labelledby="date-heading-{{ field.id }}">
+            <div class="accordion-body pt-2">
+                <div class="date-range-group" 
+                    data-range-index="{{ field.id }}" 
+                    data-field-type="{{ field.field_type }}">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">От</label>
+                            <div class="input-group">
+                                <input type="text" 
+                                        class="form-control date-start"
+                                        name="{{ field.field_name }}_min" 
+                                        data-range="{{ field.id }}"
+                                        placeholder="{{ field.placeholder|default:'дд.мм.гггг' }}"
+                                        value="{{ start_min|default:'' }}"
+                                        data-index="{{ field.id }}">
+                                <span class="input-group-text">📅</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">До</label>
+                            <div class="input-group">
+                                <input type="text" 
+                                        class="form-control date-end" 
+                                        name="{{ field.field_name }}_max"
+                                        data-range="{{ field.id }}"
+                                        placeholder="{{ field.placeholder|default:'дд.мм.гггг' }}"
+                                        value="{{ start_max|default:'' }}"
+                                        data-index="{{ field.id }}">
+                                <span class="input-group-text">📅</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endwith %}
+{% endwith %}

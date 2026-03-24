@@ -1,0 +1,88 @@
+{% extends "base/_main.html" %}
+{% block title %}
+    {% if category %}
+        {{ category }}
+    {% else %}
+        {{ title }}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    {% load my_filters querystring_tags %}
+
+    <section class="cta-section theme-bg-light py-5">
+        <div class="container text-center single-col-max-width">
+            <h2 class="heading">В данном блоге доступно {{ total_items|plural }} на разные темы</h2>
+        </div>
+    </section>
+
+    <section class="blog-list px-3 py-5 p-md-5">
+        <div class="container single-col-max-width">
+
+            <!-- 🔽 Выпадающий список сортировки -->
+            <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-2">
+                <div class="fw-bold">Сортировать:</div>
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle" 
+                            type="button" 
+                            id="sortDropdown" 
+                            data-bs-toggle="dropdown" 
+                            aria-expanded="false">
+                        {{ order_by_label }}
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="sortDropdown">
+                        {% for opt in ordering_options %}
+                            <li>
+                                <a class="dropdown-item {% if order_by == opt.value %}active{% endif %}"
+                                   href="?{% querystring order_by=opt.value page=1 %}">
+                                    {{ opt.label }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <!-- 🔼 Конец выпадающего списка -->
+
+            {% for post in items %}
+                <div class="item mb-5">
+                    <div class="row g-3 g-xl-0">
+                        <div class="col-2 col-xl-3">
+                            {% if post.images and post.get_path_image_thumbnail %}
+                                <img class="img-fluid post-thumb rounded"
+                                    src="{{ MEDIA_URL }}{{ post.get_path_image_thumbnail }}"
+                                    alt="{{ post.title }}" />
+                            {% else %}
+                                <svg class="post-thumb-placeholder d-block w-100 h-auto" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+                                    <rect width="100%" height="100%" fill="#f8f9fa"/>
+                                    <path d="M50 50 L150 50 L100 90 Z" fill="#6c757d" opacity="0.3"/>
+                                    <circle cx="100" cy="50" r="20" fill="#6c757d" opacity="0.5"/>
+                                    <text x="100" y="110" text-anchor="middle" fill="#6c757d" font-size="12">DL Blog</text>
+                                </svg>
+                            {% endif %}
+                        </div>
+                        <div class="col">
+                            <h3 class="title mb-1">
+                                <a class="text-link" href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+                            </h3>
+                            <div class="meta mb-1">
+                                <span class="date">{{ post.publish }}</span>
+                            </div>
+                            <div class="intro">{{ post.body|strip_markdown|truncatewords:30|linebreaks }}</div>
+                            <a class="text-link" href="{{ post.get_absolute_url }}">Читать статью &rarr;</a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="alert alert-info" role="alert">
+                    Постов не найдено.
+                </div>
+            {% endfor %}
+
+            {% include "base/_pagination.html" with page=items order_by=order_by %}
+        </div>
+    </section>
+
+    {% load search_tags %}
+    {% render_search_panel config_name="Поиск по полям" %}
+{% endblock %}

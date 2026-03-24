@@ -1,0 +1,34 @@
+{% load sekizai_tags static search_tags %}
+
+{% addtoblock "css" %}
+    <link rel="stylesheet" href="{% static "css/text.css" %}">
+{% endaddtoblock %}
+
+{% with field_value=filters|dict_get:field.field_name %}
+<div class="accordion accordion-flush mb-2 search-field-accordion">
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="text-heading-{{ field.id }}">
+            <button class="accordion-button py-2{% if not field_value %} collapsed{% endif %}"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#text-collapse-{{ field.id }}"
+                    aria-expanded="{% if field_value %}true{% else %}false{% endif %}"
+                    aria-controls="text-collapse-{{ field.id }}">
+                {{ field.label }}
+            </button>
+        </h2>
+        <div id="text-collapse-{{ field.id }}"
+             class="accordion-collapse collapse{% if field_value %} show{% endif %}"
+             aria-labelledby="text-heading-{{ field.id }}">
+            <div class="accordion-body pt-2">
+                <input type="text" 
+                        class="form-control" 
+                        name="{{ field.field_name }}"
+                        value="{{ field_value|default:'' }}"
+                        placeholder="{{ field.placeholder|default:'' }}"
+                        {% if field.is_required %}required{% endif %}>
+            </div>
+        </div>
+    </div>
+</div>
+{% endwith %}

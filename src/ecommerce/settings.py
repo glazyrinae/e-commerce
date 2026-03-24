@@ -19,6 +19,11 @@ from environs import Env
 env = Env()
 env.read_env()  # читает .env файл
 
+
+def _env_bool(name: str, default: bool = False) -> bool:
+    raw_value = env.str(name, str(default)).strip().lower()
+    return raw_value in {"1", "true", "yes", "on", "debug", "dev", "development"}
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -30,7 +35,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = env.str("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool("DEBUG")
+DEBUG = _env_bool("DEBUG")
 
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["127.0.0.1", "localhost"])
 INTERNAL_IPS = [
@@ -53,6 +58,8 @@ INSTALLED_APPS = [
     "products.apps.ProductsConfig",
     "settings.apps.SettingsConfig",
     "basket.apps.BasketConfig",
+    "comments.apps.CommentsConfig",
+    "search.apps.SearchConfig",
     #'debug_toolbar',
 ]
 
@@ -167,7 +174,7 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = env.str("EMAIL_HOST")
 EMAIL_PORT = env.int("EMAIL_PORT")
-EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS")
+EMAIL_USE_TLS = _env_bool("EMAIL_USE_TLS")
 EMAIL_HOST_USER = env.str("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = env.str("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL")

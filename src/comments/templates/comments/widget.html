@@ -1,0 +1,243 @@
+{% load static %}
+
+<div class="comments-widget" 
+     data-content-type-id="{{ content_type_id }}" 
+     data-object-id="{{ object_id }}"
+     data-has-rating="{% if user_comment %}true{% else %}false{% endif %}"
+     data-is-staff="{% if is_staff %}true{% else %}false{% endif %}">
+    
+    <!-- Статистика -->
+    {% if show_stats and stats %}
+    <div class="comments-stats">
+        <div class="rating-summary">
+            <div class="average-rating">
+                <div class="average-number">{{ stats.average_rating|floatformat:1 }}</div>
+                <div class="stars-display" data-rating="{{ stats.average_rating }}">
+                    <!-- Звезды загружаются через JS -->
+                </div>
+                <div class="average-text">{{ stats.total }} оценок</div>
+            </div>
+            
+            <div class="distribution">
+                {% for i in "54321" %}
+                <div class="distribution-row">
+                    <div class="distribution-label">{{ i }}★</div>
+                    <div class="distribution-bar">
+                        <div class="distribution-fill" style="width: 0%;"></div>
+                    </div>
+                    <div class="distribution-count">
+                        {{ stats.ratings_distribution.i|default:0 }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    <!-- Форма комментария (в модальном окне) -->
+    {% if show_form and not user_comment %}
+    <div class="comments-form-container">
+        <h3 class="form-title">Оставить отзыв</h3>
+        
+        <form class="comment-form">
+            {% csrf_token %}
+            
+            <!-- Рейтинг -->
+            <div class="rating-input">
+                <label>Ваша оценка:</label>
+                <div class="stars-selector">
+                    {% for i in "12345" %}
+                    <button type="button" class="star-btn" data-value="{{ forloop.counter }}">
+                        <span class="star-empty">☆</span>
+                        <span class="star-filled">★</span>
+                    </button>
+                    {% endfor %}
+                </div>
+                <input type="hidden" name="rating" value="" required>
+                <div class="rating-hint">Нажмите на звезду для оценки от 1 до 5</div>
+            </div>
+            
+            <!-- Имя -->
+            <div class="form-group">
+                <label class="form-label">Ваше имя *</label>
+                <input type="text" 
+                       name="name" 
+                       class="form-control" 
+                       placeholder="Как к вам обращаться?"
+                       maxlength="100"
+                       required>
+            </div>
+            
+            <!-- Email -->
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" 
+                       name="email" 
+                       class="form-control" 
+                       placeholder="email@example.com"
+                       maxlength="254">
+                <div class="form-text">Необязательно. Используется только для связи</div>
+            </div>
+            
+            <!-- Комментарий -->
+            <div class="form-group">
+                <label class="form-label">Ваш отзыв *</label>
+                <textarea name="text" 
+                          class="form-control" 
+                          rows="4" 
+                          placeholder="Поделитесь вашим мнением..."
+                          maxlength="2000"
+                          required></textarea>
+                <div class="char-counter">0/2000</div>
+            </div>
+            
+            <!-- Сообщения -->
+            <div class="messages"></div>
+            
+            <!-- Кнопки -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    Отправить отзыв
+                </button>
+            </div>
+        </form>
+    </div>
+    {% elif user_comment %}
+    <div class="message message-info">
+        <p>Вы уже оставили комментарий. Спасибо!</p>
+    </div>
+    {% endif %}
+    
+    <!-- Список комментариев -->
+    <div class="comments-section">
+        <div class="comments-list-header">
+            <h3 class="comments-title">Комментарии</h3>
+            
+            <div class="comments-controls">
+                <!-- Сортировка -->
+                <div class="sort-dropdown dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" 
+                            data-bs-toggle="dropdown">
+                        Сортировка
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item sort-btn active" href="#" data-sort="newest">Сначала новые</a></li>
+                        <li><a class="dropdown-item sort-btn" href="#" data-sort="oldest">Сначала старые</a></li>
+                        <li><a class="dropdown-item sort-btn" href="#" data-sort="highest">С высокой оценкой</a></li>
+                        <li><a class="dropdown-item sort-btn" href="#" data-sort="lowest">С низкой оценкой</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Фильтры -->
+                <div class="filter-badges">
+                    <span class="filter-badge active" data-filter="all">Все</span>
+                    <span class="filter-badge" data-filter="with_replies">С ответами</span>
+                    <span class="filter-badge" data-filter="verified">Проверенные</span>
+                    <span class="filter-badge" data-filter="high_rating">Только 4-5★</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Список -->
+        <ul class="comments-list">
+            <!-- Комментарии загружаются через JS -->
+            <div class="loading-indicator" style="display: none;">
+                <div class="spinner"></div>
+                <p>Загрузка комментариев...</p>
+            </div>
+        </ul>
+        
+        <!-- Пагинация -->
+        <div class="pagination-container">
+            <button type="button" class="btn btn-outline-primary load-more-btn hidden">
+                Загрузить еще
+            </button>
+        </div>
+    </div>
+    
+    <!-- Модальное окно для комментария -->
+    <div class="modal fade comment-modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <span class="text-warning">★</span>
+                        Оставить отзыв
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Форма загружается из основного контейнера -->
+                    <form class="comment-form">
+                        {% csrf_token %}
+                        
+                        <!-- Рейтинг -->
+                        <div class="rating-input">
+                            <label>Ваша оценка:</label>
+                            <div class="stars-selector">
+                                {% for i in "12345" %}
+                                <button type="button" class="star-btn" data-value="{{ forloop.counter }}">
+                                    <span class="star-empty">☆</span>
+                                    <span class="star-filled">★</span>
+                                </button>
+                                {% endfor %}
+                            </div>
+                            <input type="hidden" name="rating" value="" required>
+                            <div class="rating-hint">Нажмите на звезду для оценки от 1 до 5</div>
+                        </div>
+                        
+                        <!-- Имя -->
+                        <div class="form-group">
+                            <label class="form-label">Ваше имя *</label>
+                            <input type="text" 
+                                name="name" 
+                                class="form-control" 
+                                placeholder="Как к вам обращаться?"
+                                maxlength="100"
+                                required>
+                        </div>
+                        
+                        <!-- Email -->
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" 
+                                name="email" 
+                                class="form-control" 
+                                placeholder="email@example.com"
+                                maxlength="254">
+                            <div class="form-text">Необязательно. Используется только для связи</div>
+                        </div>
+                        
+                        <!-- Комментарий -->
+                        <div class="form-group">
+                            <label class="form-label">Ваш отзыв *</label>
+                            <textarea name="text" 
+                                    class="form-control" 
+                                    rows="4" 
+                                    placeholder="Поделитесь вашим мнением..."
+                                    maxlength="2000"
+                                    required></textarea>
+                            <div class="char-counter">0/2000</div>
+                        </div>
+                        
+                        <!-- Сообщения -->
+                        <div class="messages"></div>
+                        
+                        <!-- Кнопки -->
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                Отправить отзыв
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Подключаем стили -->
+<link rel="stylesheet" href="{% static 'comments/css/comments.css' %}">
+
+<!-- Подключаем скрипты -->
+<script src="{% static 'comments/js/comments.js' %}"></script>

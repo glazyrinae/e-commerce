@@ -1,0 +1,131 @@
+
+{% load static sekizai_tags %}
+{% if config %}
+<div class="search-panel search-panel-{{ config.position }}" 
+     id="search-panel-{{ config.id }}"
+     data-config-id="{{ config.id }}"
+     data-content-type="{{ config.content_type.id }}">
+    
+    {% if config.position == 'modal' %}
+    <!-- Модальное окно -->
+    <button type="button" class="btn btn-primary search-modal-trigger" 
+            data-bs-toggle="modal" data-bs-target="#searchModal{{ config.id }}">
+        <i class="bi bi-search"></i> Поиск
+    </button>
+    
+    <div class="modal fade" id="searchModal{{ config.id }}" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ config.name }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    {% include "search/search_form.html" %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% elif config.position == 'left' or config.position == 'right' or config.position == 'top' or config.position == 'bottom' %}
+    {# ВАЖНО: select.js/range.js инициализируют только первую `.search-form` на странице. #}
+    {# Поэтому форму держим в единственном экземпляре и переносим её между контейнерами (mobile/desktop) через JS. #}
+    {# Скрипт добавляем ВЫШЕ include формы, чтобы он попал в `js_footer` раньше select2/noUiSlider и успел перенести DOM. #}
+    {% addtoblock "js_footer" %}
+        <script src="{% static 'js/search_panel.js' %}"></script>
+    {% endaddtoblock %}
+
+    {% with offcanvas_id="searchOffcanvas"|add:config.id|stringformat:"s" %}
+    {# Mobile: static panel in normal flow #}
+    <div class="card d-lg-none mb-3 search-panel-mobile" data-search-panel-mobile="1" data-search-panel-root-id="search-panel-{{ config.id }}">
+        <div class="card-header">
+            {{ config.name }}
+        </div>
+        <div class="card-body" data-search-panel-mobile-host="1"></div>
+    </div>
+
+    {% if config.position == 'left' %}
+    <div class="offcanvas offcanvas-start show d-none d-lg-block"
+         tabindex="-1"
+         id="{{ offcanvas_id }}"
+         aria-labelledby="{{ offcanvas_id }}Label"
+         data-bs-scroll="true"
+         data-bs-backdrop="false"
+         data-bs-keyboard="false"
+         data-search-placement="start">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="{{ offcanvas_id }}Label">{{ config.name }}</h5>
+        </div>
+        <div class="offcanvas-body" data-search-panel-desktop-host="1">
+            <div data-search-panel-inner="1">
+                {% include "search/search_form.html" %}
+            </div>
+        </div>
+    </div>
+    {% elif config.position == 'right' %}
+    <div class="offcanvas offcanvas-end show d-none d-lg-block"
+         tabindex="-1"
+         id="{{ offcanvas_id }}"
+         aria-labelledby="{{ offcanvas_id }}Label"
+         data-bs-scroll="true"
+         data-bs-backdrop="false"
+         data-bs-keyboard="false"
+         data-search-placement="end">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="{{ offcanvas_id }}Label">{{ config.name }}</h5>
+        </div>
+        <div class="offcanvas-body" data-search-panel-desktop-host="1">
+            <div data-search-panel-inner="1">
+                {% include "search/search_form.html" %}
+            </div>
+        </div>
+    </div>
+    {% elif config.position == 'top' %}
+    <div class="offcanvas offcanvas-top show d-none d-lg-block"
+         tabindex="-1"
+         id="{{ offcanvas_id }}"
+         aria-labelledby="{{ offcanvas_id }}Label"
+         data-bs-scroll="true"
+         data-bs-backdrop="false"
+         data-bs-keyboard="false"
+         data-search-placement="top">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="{{ offcanvas_id }}Label">{{ config.name }}</h5>
+        </div>
+        <div class="offcanvas-body" data-search-panel-desktop-host="1">
+            <div data-search-panel-inner="1">
+                {% include "search/search_form.html" %}
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="offcanvas offcanvas-bottom show d-none d-lg-block"
+         tabindex="-1"
+         id="{{ offcanvas_id }}"
+         aria-labelledby="{{ offcanvas_id }}Label"
+         data-bs-scroll="true"
+         data-bs-backdrop="false"
+         data-bs-keyboard="false"
+         data-search-placement="bottom">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="{{ offcanvas_id }}Label">{{ config.name }}</h5>
+        </div>
+        <div class="offcanvas-body" data-search-panel-desktop-host="1">
+            <div data-search-panel-inner="1">
+                {% include "search/search_form.html" %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    {% else %}
+    <!-- Обычная панель -->
+    <div class="search-panel-content">
+        {% include "search/search_form.html" %}
+    </div>
+    {% endif %}
+    
+</div>
+
+{% endif %}

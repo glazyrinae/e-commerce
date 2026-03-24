@@ -1,0 +1,96 @@
+{% load sekizai_tags static %}
+
+<form id="{{ form_id }}" 
+      method=post
+      action="{% url 'search:search_result' %}"
+      class="search-form" 
+      data-content-type="{{ config.content_type.id }}"
+      data-config-id="{{ config.id }}"
+      data-results-limit="{{ config.results_limit }}">
+     {% csrf_token %}
+    {# Preserve current ordering across PRG (POST -> redirect -> GET). #}
+    <input type="hidden" name="order_by" value="{{ request.GET.order_by|default:'' }}">
+    <!-- <div class="input-group mb-3">
+        <input type="text" 
+               class="form-control search-input" 
+               placeholder="{{ config.placeholder }}"
+               name="q"
+               aria-label="Поиск">
+        <button class="btn btn-outline-secondary search-button" type="button">
+            <i class="bi bi-search"></i>
+        </button>
+    </div> -->
+    
+    <!-- Дополнительные поля -->
+    <div class="search-fields mb-3">
+        {% for field in fields %}
+        <div class="mb-2 search-field-{{ field.field_type }}" 
+             data-field-name="{{ field.field_name }}"
+             data-field-type="{{ field.field_type }}">
+            
+            {% if field.field_type == 'text' %}
+            
+                {% include "search/items/text.html" with field=field %}
+            
+            {% elif field.field_type == 'checkbox' %}
+            
+            <!-- <div class="form-check">
+                <input class="form-check-input" 
+                       type="checkbox" 
+                       name="{{ field.field_name }}"
+                       id="field_{{ field.id }}">
+                <label class="form-check-label" for="field_{{ field.id }}">
+                    {{ field.label }}
+                </label>
+            </div> -->
+            
+            {% elif field.field_type == 'radio' %}
+            
+            <label class="form-label">{{ field.label }}</label>
+            <div class="search-dynamic-radio" data-field-id="{{ field.id }}">
+                <!-- Динамически загрузится через JS -->
+            </div>
+            
+            {% elif field.field_type == 'select' %}
+                {% include "search/items/select.html" with field=field multiple=False %}
+            {% elif field.field_type == 'select_multiple' %}
+                {% include "search/items/select.html" with field=field multiple=True %}
+            {% elif field.field_type == 'range' %}
+                {% include "search/items/range.html" with field=field %}
+            {% elif field.field_type == 'date_range' %}
+                {% include "search/items/date_range.html" with field=field %}
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="d-flex justify-content-between align-items-center">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-search"></i> Искать
+        </button>
+        
+        <button type="button" class="btn btn-outline-secondary search-clear">
+            <i class="bi bi-x-circle"></i> Очистить
+        </button>
+    </div>
+</form>
+
+<!-- Результаты поиска -->
+{% comment %} <div class="search-results mt-3" id="results-{{ form_id }}">
+    <div class="search-loading">
+        <div class="spinner-border spinner-border-sm" role="status">
+            <span class="visually-hidden">Загрузка...</span>
+        </div>
+        <span class="ms-2">Поиск...</span>
+    </div>
+    <div class="search-results-list"></div>
+</div> {% endcomment %}
+
+
+{% addtoblock "js_header" %}
+     <script src="{% static 'js/src/jquery-3.7.1.min.js' %}"></script>
+{% endaddtoblock %}
+
+{% addtoblock "js_footer" %}
+    <script src="{% static 'js/search.js' %}"></script>
+{% endaddtoblock %}

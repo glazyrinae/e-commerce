@@ -1,0 +1,79 @@
+{% load sekizai_tags static search_tags %}
+
+{% addtoblock "css" %}
+    <link rel="stylesheet" href="{% static "css/src/nouislider.min.css" %}">
+    <link rel="stylesheet" href="{% static "css/range.css" %}">
+{% endaddtoblock %}
+{% addtoblock "js_footer" %}
+    <script src="{% static 'js/src/nouislider.min.js' %}"></script>
+    <script src="{% static 'js/range.js' %}"></script>
+{% endaddtoblock %}
+
+{% with min_key=field.field_name|add:"_min" max_key=field.field_name|add:"_max" %}
+{% with raw_min=filters|dict_get:min_key raw_max=filters|dict_get:max_key %}
+{% with default_min=field.min_value|default:0 default_max=field.max_value|default:100 %}
+{% with start_min=raw_min|default:default_min start_max=raw_max|default:default_max %}
+{% should_expand_range raw_min raw_max start_min start_max default_min default_max as should_expand %}
+<div class="accordion accordion-flush mb-2 range-accordion">
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="range-heading-{{ field.id }}">
+            <button class="accordion-button py-2{% if not should_expand %} collapsed{% endif %}"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#range-collapse-{{ field.id }}"
+                    aria-expanded="{% if should_expand %}true{% else %}false{% endif %}"
+                    aria-controls="range-collapse-{{ field.id }}">
+                {{ field.label }}
+            </button>
+        </h2>
+        <div id="range-collapse-{{ field.id }}"
+             class="accordion-collapse collapse{% if should_expand %} show{% endif %}"
+             aria-labelledby="range-heading-{{ field.id }}">
+            <div class="accordion-body pt-2">
+                <div class="range-slider-wrapper mb-0"
+                    data-field-name="{{ field.field_name }}"
+                    data-min="{{ default_min }}"
+                    data-max="{{ default_max }}"
+                    data-step="{{ field.step|default:1 }}"
+                    data-start-min="{{ start_min }}"
+                    data-start-max="{{ start_max }}">
+                    <!-- Контейнер для слайдера -->
+                    <div class="slider-container mb-3">
+                        <!-- Сам слайдер (ДОЛЖЕН БЫТЬ ПУСТОЙ DIV) -->
+                        <div class="slider" id="slider-{{ field.id }}"></div>
+                        <!-- Поля для ручного ввода -->
+                        <div class="row" style="margin-top: 35px;">
+                            <div class="col">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">От</span>
+                                    <input type="number" 
+                                        class="form-control slider-min-input" 
+                                        min="{{ field.min_value|default:0 }}"
+                                        max="{{ field.max_value|default:100 }}"
+                                        step="{{ field.step|default:1 }}">
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">До</span>
+                                    <input type="number" 
+                                        class="form-control slider-max-input" 
+                                        min="{{ field.min_value|default:0 }}"
+                                        max="{{ field.max_value|default:100 }}"
+                                        step="{{ field.step|default:1 }}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Скрытые поля -->
+                    <input type="hidden" name="{{ field.field_name }}_min" class="slider-hidden-min" value="{{ start_min }}">
+                    <input type="hidden" name="{{ field.field_name }}_max" class="slider-hidden-max" value="{{ start_max }}">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endwith %}
+{% endwith %}
+{% endwith %}
+{% endwith %}

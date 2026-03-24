@@ -1,0 +1,45 @@
+{% load sekizai_tags static search_tags %}
+
+{% addtoblock "css" %}
+    <link rel="stylesheet" href="{% static "css/src/select2.css" %}">
+    <link rel="stylesheet" href="{% static "css/src/select2-bootstrap-5-theme.min.css" %}">
+    <link rel="stylesheet" href="{% static "css/select.css" %}">
+{% endaddtoblock %}
+{% addtoblock "js_footer" %}
+    <script src="{% static 'js/src/select2.js' %}"></script>
+    <script src="{% static 'js/select.js' %}"></script>
+{% endaddtoblock %}
+
+{% with selected=filters|dict_get:field.field_name|to_csv %}
+<div class="accordion accordion-flush mb-2 search-field-accordion">
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="select-heading-{{ field.id }}">
+            <button class="accordion-button py-2{% if not selected %} collapsed{% endif %}"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#select-collapse-{{ field.id }}"
+                    aria-expanded="{% if selected %}true{% else %}false{% endif %}"
+                    aria-controls="select-collapse-{{ field.id }}">
+                {{ field.label }}
+            </button>
+        </h2>
+        <div id="select-collapse-{{ field.id }}"
+             class="accordion-collapse collapse{% if selected %} show{% endif %}"
+             aria-labelledby="select-heading-{{ field.id }}">
+            <div class="accordion-body pt-2">
+                <!-- ОДИНОЧНЫЙ/МНОЖЕСТВЕННЫЙ ВЫБОР -->
+                <select class="form-control {{ field.field_type }}" 
+                        data-field-type="select"
+                        data-field-id="{{ field.id }}"
+                        data-selected="{{ selected }}"
+                        name="{{ field.field_name }}"
+                        {% if multiple %}multiple{% endif %}
+                        data-placeholder="Выберите...">
+                    <option></option>
+                    <!-- Опции загрузятся через AJAX -->
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+{% endwith %}

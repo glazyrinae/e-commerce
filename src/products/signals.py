@@ -1,16 +1,17 @@
+#Images = apps.get_model("products", "Images")
+import logging
 import os
+from datetime import datetime
+from io import BytesIO
+from uuid import uuid4
+
+from django.core.files.base import ContentFile
 from django.db.models.signals import post_delete, pre_save
 from django.dispatch import receiver
 from PIL import Image
-from django.apps import apps
-from uuid import uuid4
-from datetime import datetime
-from io import BytesIO
-from .models import Images
-from django.core.files.base import ContentFile
 
-#Images = apps.get_model("products", "Images")
-import logging
+from .models import Images
+
 logger = logging.getLogger(__name__)
 
 def rename_image(filename):

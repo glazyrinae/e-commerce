@@ -1,35 +1,60 @@
 import logging
+from typing import TypedDict
 
 from django.core.paginator import Paginator
-from django.http import JsonResponse
+from django.http import HttpRequest, JsonResponse
+from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
 
-from .models import Products
+from .models import Images, Products, Store
 
 logger = logging.getLogger(__name__)
 
 
+class ProductStoreItem(TypedDict):
+    size: str
+    cnt: int
+    store_id: int
+
+
+class ProductViewData(TypedDict):
+    product: Products
+    product_title: str
+    product_category: str
+    product_total_cnt: int
+    store_items: list[Store]
+    colors_grouped: dict[str, list[ProductStoreItem]]
+
+
 # Главная
-def list_items(request):
-    products = Products.get_random_with_details(10)
+def list_items(request: HttpRequest) -> HttpResponse:
+    products_qs = Products.get_random_with_details(10)  # это QuerySet
+    products_list = list(products_qs)  # преобразуем в список
+    available_products = get_products(products_list)  # теперь типы совпадают
+    # Безопасные срезы
+    featured = available_products[:5] if available_products else []
+    latest = available_products[5:10] if len(available_products) > 5 else []
 
-    available_products = []
+    return render(
+        request,
+        "items/list_items.html",
+        {
+            "featured_products": featured,
+            "latest_products": latest,
+        },
+    )
+
+
+def get_products(products: list[Products]) -> list[ProductViewData]:
+    available_products: list[ProductViewData] = []
     for product in products:
-        # Используем менеджер напрямую через _meta (Pylance не ругается)
-        store_items = []
-        try:
-            # Прямой запрос к модели Store через менеджер
-            from .models import Store
-
-            store_items = list(
-                Store.objects.filter(product=product).select_related("color", "size")
-            )
-        except (ImportError, Exception):
-            store_items = []
+        store_items = list(
+            Store.objects.filter(product=product).select_related("color", "size")
+        )
 
         # Группируем store по цветам для шаблона
-        colors_grouped = {}
+        colors_grouped: dict[str, list[ProductStoreItem]] = {}
         for item in store_items:
             color = "Без цвета"
             if item.color and hasattr(item.color, "title"):
@@ -39,9 +64,9 @@ def list_items(request):
                 colors_grouped[color] = []
 
             # Безопасное получение атрибутов
-            size_value = "Не указан"
+            size_value: str = "Не указан"
             if item.size and hasattr(item.size, "size"):
-                size_value = item.size.size
+                size_value = str(item.size.size)
 
             colors_grouped[color].append(
                 {"size": size_value, "cnt": item.cnt, "store_id": item.pk}
@@ -63,22 +88,53 @@ def list_items(request):
                 "colors_grouped": colors_grouped,
             }
         )
+    return available_products
 
-    # Безопасные срезы
-    featured = available_products[:5] if available_products else []
-    latest = available_products[5:10] if len(available_products) > 5 else []
 
-    return render(
-        request,
-        "items/list_items.html",
-        {
-            "featured_products": featured,
-            "latest_products": latest,
-        },
+def products(request: HttpRequest, category_slug: str) -> HttpResponse:
+    items_per_page = 3
+    page_number = request.GET.get("page", 1)
+
+    products_qs = (
+        Products.objects.select_related("category")
+        .filter(category__slug=category_slug)
+        .order_by("-created_at")
+    )
+    products_list = list(products_qs)
+    available_products = get_products(products_list)
+    paginator = Paginator(available_products, items_per_page)
+    page_obj = paginator.get_page(page_number)
+
+    # Проверяем AJAX запрос
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return load_more_content(request, category_slug)
+
+    return render(request, "items/products.html", {"products": page_obj})
+
+
+def load_more_content(request: HttpRequest, category_slug: str) -> JsonResponse:
+    page_number = request.GET.get("page", 1)
+    items_per_page = 3
+
+    products_qs = (
+        Products.objects.select_related("category")
+        .filter(category__slug=category_slug)
+        .order_by("-created_at")
     )
 
+    products_list = list(products_qs)
+    available_products = get_products(products_list)
+    paginator = Paginator(available_products, items_per_page)
+    page_obj = paginator.get_page(page_number)
 
-def product(request, category_slug, product_id):
+    html_content = render_to_string("ajax/items_partial.html", {"objects": page_obj})
+
+    return JsonResponse({"html": html_content, "has_next": page_obj.has_next()})
+
+
+def product(
+    request: HttpRequest, category_slug: str, product_id: int
+) -> HttpResponse:
     # del request.session["cart"]
     product = get_object_or_404(
         Products.objects.select_related("category"),
@@ -87,22 +143,14 @@ def product(request, category_slug, product_id):
     )
 
     # Безопасное получение связанных объектов через менеджеры
-    images = []
-    store_items = []
-
-    try:
-        from .models import Images, Store
-
-        images = list(Images.objects.filter(product=product))
-        store_items = list(
-            Store.objects.filter(product=product).select_related("color", "size")
-        )
-    except (ImportError, Exception):
-        pass
+    images: list[Images] = list(Images.objects.filter(product=product))
+    store_items: list[Store] = list(
+        Store.objects.filter(product=product).select_related("color", "size")
+    )
 
     # Безопасное получение цветов и размеров
-    colors = set()
-    sizes = set()
+    colors: set[str] = set()
+    sizes: set[str] = set()
 
     for item in store_items:
         if item.color and hasattr(item.color, "title") and item.color.title:
@@ -122,47 +170,10 @@ def product(request, category_slug, product_id):
     )
 
 
-def products(request, category_slug):
-    items_per_page = 5
-    page_number = request.GET.get("page", 1)
-
-    products_qs = (
-        Products.objects.select_related("category")
-        .filter(category__slug=category_slug)
-        .order_by("-created_at")
-    )
-    paginator = Paginator(products_qs, items_per_page)
-    page_obj = paginator.get_page(page_number)
-
-    # Проверяем AJAX запрос
-    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-        return load_more_content(request, category_slug)
-
-    return render(request, "items/products.html", {"products": page_obj})
-
-
 # AJAX
-def load_modal_content(request, category_slug):
+def load_modal_content(request: HttpRequest, category_slug: str) -> JsonResponse:
     page_number = request.GET.get("page", 1)
-    items_per_page = 5
-
-    products_qs = (
-        Products.objects.select_related("category")
-        .filter(category__slug=category_slug)
-        .order_by("-created_at")
-    )
-
-    paginator = Paginator(products_qs, items_per_page)
-    page_obj = paginator.get_page(page_number)
-
-    html_content = render_to_string("ajax/items_partial.html", {"products": page_obj})
-
-    return JsonResponse({"html": html_content, "has_next": page_obj.has_next()})
-
-
-def load_more_content(request, category_slug):
-    page_number = request.GET.get("page", 1)
-    items_per_page = 5
+    items_per_page = 3
 
     products_qs = (
         Products.objects.select_related("category")

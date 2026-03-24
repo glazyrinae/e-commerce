@@ -125,6 +125,7 @@ ignore_missing_imports = true
 warn_return_any = true
 warn_unused_configs = true
 strict_optional = true
+exclude = [".*/migrations/.*\\.py$"]
 
 # -----------------------------------------------------------------------------
 # Python LSP Server (pylsp) - ИСПРАВЛЕНО!

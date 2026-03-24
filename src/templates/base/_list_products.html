@@ -4,24 +4,24 @@
   <div class="container-md">
     <div class="display-header d-flex align-items-center justify-content-between">
       <h2 class="section-title text-uppercase">{{title}}</h2>
-      <div class="btn-right">
+      {% comment %} <div class="btn-right">
         <a href="#" class="d-inline-block text-uppercase text-hover fw-bold">Посмотреть все</a>
-      </div>
+      </div> {% endcomment %}
     </div>
     <div class="product-content padding-small">
-      <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5">
+      <div id="content-container" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5">
         {% for object in objects %}
         <div class="col mb-4">
           <div class="product-card position-relative">
             <div class="card-img">
-              <img src="{{ MEDIA_URL }}{{  object.product.get_path_image_thumbnail }}" alt="product-item" class="product-image img-fluid">
+              <img src="/media/{{  object.product.get_path_image_thumbnail }}" alt="product-item" class="product-image img-fluid">
               <div class="cart-concern position-absolute d-flex justify-content-center">
                 <div class="cart-button d-flex gap-2 justify-content-center align-items-center">
-                  <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#modallong">
+                  {% comment %} <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#modallong">
                     <svg class="shopping-carriage">
                       <use xlink:href="#shopping-carriage"></use>
                     </svg>
-                  </button>
+                  </button> {% endcomment %}
                   <button type="button" class="btn btn-light" data-bs-target="#modaltoggle_{{ object.product.id }}" data-bs-toggle="modal">
                     <svg class="quick-view">
                       <use xlink:href="#quick-view"></use>

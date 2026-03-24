@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from django import forms
-from .models import Categories, Images, Products, Store, Colors, Sizes
+
+from .models import Categories, Colors, Images, Products, Sizes, Store
 
 
 @admin.register(Colors)
@@ -29,14 +29,13 @@ class ImageInline(admin.StackedInline):
     readonly_fields = ("thumbnail_preview",)
     fields = ("image", "thumbnail_preview", "image_type")
 
+    @admin.display(description="Thumbnail Preview")
     def thumbnail_preview(self, obj):
         if obj.thumbnail:
             return format_html(
                 '<img src="{}" width="350" height="200" />', obj.thumbnail.url
             )
         return "-"
-
-    thumbnail_preview.short_description = "Thumbnail Preview"
 
 
 @admin.register(Categories)

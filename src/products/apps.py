@@ -8,4 +8,4 @@ class ProductsConfig(AppConfig):
 
     def ready(self):
         # Импортируем сигналы
-        import products.signals
+        pass

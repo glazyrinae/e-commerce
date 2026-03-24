@@ -1,6 +1,8 @@
+from typing import cast
+
+import markdown  # type: ignore[import-untyped]
 from django import template
 from django.utils.safestring import mark_safe
-import markdown
 
 register = template.Library()
 
@@ -11,21 +13,30 @@ def get_discount(price: float, price_count: float) -> str:
 
 
 @register.filter
-def format_price(value):
+def format_price(value: object) -> object:
     """Форматирует цену с пробелами между тысячами"""
     try:
-        return "{:,.0f}".format(float(value)).replace(",", " ")
+        if isinstance(value, str | int | float):
+            return f"{float(value):,.0f}".replace(",", " ")
+        return value
     except (ValueError, TypeError):
         return value
 
 
 @register.filter(name="markdown")
-def markdown_format(text):
-    return mark_safe(markdown.markdown(text))
+def markdown_format(text: str) -> str:
+    rendered_html = cast(str, markdown.markdown(text))
+    return cast(str, mark_safe(rendered_html))
+
+
+DEFAULT_PLURAL_VARIANTS = ["отзыв", "отзыва", "отзывов"]
 
 
 @register.filter(name="plural")
-def choose_plural(amount: int, variants: list = ["отзыв", "отзыва", "отзывов"]) -> str:
+def choose_plural(
+    amount: int, variants: list[str] | None = None
+) -> str:
+    variants = variants or DEFAULT_PLURAL_VARIANTS
     if isinstance(variants, list) and len(variants) == 3:
         if amount % 10 == 1 and amount % 100 != 11:
             variant = 0

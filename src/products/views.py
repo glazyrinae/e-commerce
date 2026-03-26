@@ -46,50 +46,52 @@ def list_items(request: HttpRequest) -> HttpResponse:
     )
 
 
+def get_item(product: Products) -> dict:
+    store_items = list(
+        Store.objects.filter(product=product).select_related("color", "size")
+    )
+
+    # Группируем store по цветам для шаблона
+    colors_grouped: dict[str, list[ProductStoreItem]] = {}
+    for item in store_items:
+        color = "Без цвета"
+        if item.color and hasattr(item.color, "title"):
+            color = item.color.title
+
+        if color not in colors_grouped:
+            colors_grouped[color] = []
+
+        # Безопасное получение атрибутов
+        size_value: str = "Не указан"
+        if item.size and hasattr(item.size, "size"):
+            size_value = str(item.size.size)
+
+        colors_grouped[color].append(
+            {"size": size_value, "cnt": item.cnt, "store_id": item.pk}
+        )
+
+    # Безопасное получение атрибутов продукта
+    product_title = getattr(product, "title", "Без названия")
+    category = getattr(product, "category", None)
+    slug = getattr(category, "slug", None)
+    category_title = getattr(category, "title", "Без категории")
+    total_cnt = sum(getattr(item, "cnt", 0) for item in store_items)
+
+    return {
+        "product": product,
+        "slug": slug,
+        "product_title": product_title,
+        "product_category": category_title,
+        "product_total_cnt": total_cnt,
+        "store_items": store_items,
+        "colors_grouped": colors_grouped,
+    }
+
+
 def get_products(products: list[Products]) -> list[ProductViewData]:
     available_products: list[ProductViewData] = []
     for product in products:
-        store_items = list(
-            Store.objects.filter(product=product).select_related("color", "size")
-        )
-
-        # Группируем store по цветам для шаблона
-        colors_grouped: dict[str, list[ProductStoreItem]] = {}
-        for item in store_items:
-            color = "Без цвета"
-            if item.color and hasattr(item.color, "title"):
-                color = item.color.title
-
-            if color not in colors_grouped:
-                colors_grouped[color] = []
-
-            # Безопасное получение атрибутов
-            size_value: str = "Не указан"
-            if item.size and hasattr(item.size, "size"):
-                size_value = str(item.size.size)
-
-            colors_grouped[color].append(
-                {"size": size_value, "cnt": item.cnt, "store_id": item.pk}
-            )
-
-        # Безопасное получение атрибутов продукта
-        product_title = getattr(product, "title", "Без названия")
-        category = getattr(product, "category", None)
-        slug = getattr(category, "slug", None)
-        category_title = getattr(category, "title", "Без категории")
-        total_cnt = sum(getattr(item, "cnt", 0) for item in store_items)
-
-        available_products.append(
-            {
-                "product": product,
-                "slug": slug,
-                "product_title": product_title,
-                "product_category": category_title,
-                "product_total_cnt": total_cnt,
-                "store_items": store_items,
-                "colors_grouped": colors_grouped,
-            }
-        )
+        available_products.append(get_item(product))
     return available_products
 
 
@@ -141,33 +143,16 @@ def product(request: HttpRequest, category_slug: str, product_id: int) -> HttpRe
         category__slug=category_slug,
         id=product_id,
     )
-
+    item = get_item(product)
     # Безопасное получение связанных объектов через менеджеры
     images: list[Images] = list(Images.objects.filter(product=product))
-    store_items: list[Store] = list(
-        Store.objects.filter(product=product).select_related("color", "size")
-    )
-
-    # Безопасное получение цветов и размеров
-    colors: set[str] = set()
-    sizes: set[str] = set()
-
-    for item in store_items:
-        if item.color and hasattr(item.color, "title") and item.color.title:
-            colors.add(item.color.title)
-        if item.size and hasattr(item.size, "size") and item.size.size:
-            sizes.add(str(item.size.size))
-
-    return render(
-        request,
-        "detail.html",
+    item.update(
         {
-            "product": product,
             "images": images,
-            "colors": colors,
-            "sizes": sizes,
-        },
+        }
     )
+
+    return render(request, "detail.html", item)
 
 
 # AJAX

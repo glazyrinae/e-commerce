@@ -375,6 +375,18 @@ class Products(models.Model):
         return str(image) if image else "empty.png"
 
     @classmethod
+    def get_cnt_with_details(cls, color, size):
+        return cls.objects.prefetch_related(
+            models.Prefetch(
+                "store", queryset=Store.objects.filter(color=color, size=size)
+            )
+        )
+
+    @property
+    def category_slug(self):
+        return self.category.slug if self.category_id else None
+
+    @classmethod
     def get_random_with_details(cls, count=10):
         """
         Возвращает случайные товары с предзагруженными связанными данными.

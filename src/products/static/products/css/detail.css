@@ -21,6 +21,29 @@
     color: white;
 }
 
+.detail-size-radio:checked + .size-option {
+    background-color: #0d6efd;
+    color: #fff;
+}
+
+.detail-size-radio:disabled + .size-option,
+.size-option.disabled,
+.form-check-label.disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.size-option.qv-size-unavailable,
+.size-option.disabled {
+    text-decoration: line-through;
+}
+
+.size-option.qv-size-unavailable:hover,
+.size-option.disabled:hover {
+    background-color: transparent;
+    color: inherit;
+}
+
 .cart-item-img {
     width: 80px;
     height: 80px;

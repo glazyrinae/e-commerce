@@ -4,20 +4,20 @@
 <!-- Основной контент -->
 <div class="container mb-5">
     <div class="shopping-cart">
-        <div class="shopping-cart-content">
-        {% for product in cart %}
-            <div class="mini-cart cart-list p-0 mt-3">
+        <div class="shopping-cart-content" id="js-cart-content">
+        <div id="js-cart-list" data-basket-url="{% url 'basket' %}">
+        {% for item in cart %}
+            <div class="mini-cart cart-list p-0 mt-3" data-basket-row data-basket-id="{{ item.id }}" data-unit-price="{{ item.unit_price|floatformat:2 }}">
                 <div class="mini-cart-item d-flex border-bottom pb-3">
                 <div class="col-lg-2 col-md-3 col-sm-2 me-4">
-                    <a href="#" title="product-image">
-                    <img src='{{ MEDIA_URL }}{{  product.img }}' class="img-fluid" alt="single-product-item">
+                    <a href="{% url 'product' item.product.category_slug item.product.pk %}" target="_blank" title="product-image">
+                    <img src='{{ MEDIA_URL }}{{  item.product.get_path_image_thumbnail }}' class="img-fluid" alt="single-product-item">
                     </a>
                 </div>
                 <div class="col-lg-9 col-md-8 col-sm-8">
                     <div class="product-header d-flex justify-content-between align-items-center mb-3">
-                    <h4 class="product-title fs-6 me-5">{{product.name}}</h4>
-                    <a href="" class="remove" aria-label="Remove this item" data-product_id="11913"
-                        data-cart_item_key="abc" data-product_sku="">
+                    <h4 class="product-title fs-6 me-5">{{item.product.title}}</h4>
+                    <a href="#" class="remove js-remove-item" aria-label="Remove this item">
                         <svg class="close">
                         <use xlink:href="#close"></use>
                         </svg>
@@ -26,85 +26,58 @@
                     <div class="quantity-price d-flex justify-content-between align-items-center">
                     <div class="input-group product-qty">
                         <button type="button"
-                        class="quantity-left-minus btn btn-light rounded-0 rounded-start btn-number"
+                        class="quantity-left-minus btn btn-light rounded-0 rounded-start btn-number js-qty-btn"
                         data-type="minus">
                             <svg width="16" height="16">
                                 <use xlink:href="#minus"></use>
                             </svg>
                         </button>
-                        <input type="text" name="quantity" class="form-control input-number quantity" value="1">
-                        <button type="button" class="quantity-right-plus btn btn-light rounded-0 rounded-end btn-number"
+                        <input type="text" name="quantity" class="form-control input-number quantity js-qty-input text-center" value="{{ item.quantity }}" readonly>
+                        <button type="button" class="quantity-right-plus btn btn-light rounded-0 rounded-end btn-number js-qty-btn"
                         data-type="plus">
                         <svg width="16" height="16">
                             <use xlink:href="#plus"></use>
                         </svg>
                         </button>
+                        <input type="hidden" name="stock_cnt" value="{{  item.stock_cnt }}">
                     </div>
                     <div class="price-code">
-                        <span class="product-price fs-6">{{product.price}}</span>
+                        <span class="product-price fs-6 js-line-total">{{ item.line_total|floatformat:2 }}</span>
                     </div>
                     </div>
+                    <div class="text-danger small mt-1 js-stock-msg" style="display:none;"></div>
                     <!-- quantity-price -->
                 </div>
                 </div>
             </div>
         {% endfor %}
-        {% if product.images and product.get_path_image_thumbnail %}
+        </div>
+        {% if cart %}
             <!-- cart-list -->
-            <div class="mini-cart-total d-flex justify-content-between py-4">
-                <span class="fs-6">Subtotal:</span>
+            <div class="mini-cart-total d-flex justify-content-between py-4" id="js-cart-summary">
+                <span class="fs-6">Всего к оплате (<span id="js-cart-total-items">{{ cart_total_items }}</span> шт.):</span>
                 <span class="special-price-code">
                 <span class="price-amount amount fs-6" style="opacity: 1;">
                     <bdi>
-                    <span class="price-currency-symbol"></span>{{cart_total_price_items}}</bdi>
+                    <span class="price-currency-symbol"></span><span id="js-cart-total-price">{{cart_total_price_items|floatformat:2}}</span></bdi>
                 </span>
                 </span>
             </div>
-            <div class="modal-footer my-4 justify-content-center">
+            <div class="modal-footer my-4 justify-content-center" id="js-cart-actions">
                 <button type="button" class="btn btn-red hvr-sweep-to-right dark-sweep">Заказать</button>
                 <button type="button"
                 class="btn btn-outline-gray hvr-sweep-to-right dark-sweep">Вернуться к покупкам</button>
             </div>
-        {% else %}
-            <div class="text-center mb-4">
-                Корзина пуста
-            </div>
-            <!-- <button type="button" class="btn btn-outline-gray hvr-sweep-to-right dark-sweep">Вернуться к покупкам</button> -->
         {% endif %}
+        <div class="text-center mb-4" id="js-empty-cart" {% if cart %}style="display:none;"{% endif %}>
+            Корзина пуста
+        </div>
         </div>
     </div>
 </div>
 {% endblock %}
 
 {% block js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const cnt = document.getElementsByClassName('cnt-good')[0];
-    const loadBtnMinus = document.getElementsByClassName('btn-minus')[0];
-    const loadBtnPlus = document.getElementsByClassName('btn-plus')[0];
-
-    if (loadBtnMinus && cnt) {
-        loadBtnMinus.addEventListener('click', minus_good);
-    } 
-
-    if (loadBtnPlus && cnt) {
-        loadBtnPlus.addEventListener('click', plus_good);
-    }   
-
-    function minus_good() {
-        let currentValue = parseInt(cnt.value) || 0;
-        if (currentValue > 0){
-            cnt.value = currentValue - 1;
-        } 
-    }
-
-    function plus_good() {
-        let currentValue = parseInt(cnt.value) || 0;
-        cnt.value = currentValue + 1;
-    }
-});
-</script>
-<script src="{% static "js/jquery-1.11.0.min.js" %}"></script> 
-<script src="{% static "js/plugins.js" %}"></script> 
-<script src="{% static "js/script.js" %}"></script> 
+{{ block.super }}
+<script src="{% static 'basket/js/basket.js' %}"></script>
 {% endblock %}

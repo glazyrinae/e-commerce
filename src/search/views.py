@@ -35,6 +35,15 @@ def _getattr(obj: Any, name: str, default: Any = None) -> Any:
 
 
 class ListItems(View):
+    def _get_active_config(self) -> SearchConfig | None:
+        config = (
+            SearchConfig.objects.filter(is_active=True)
+            .select_related("content_type")
+            .order_by("-id")
+            .first()
+        )
+        return cast(SearchConfig | None, config)
+
     def _find_first_field(
         self, model_class: type[models.Model], candidates: list[str]
     ) -> str | None:
@@ -98,9 +107,11 @@ class ListItems(View):
     def _get_filtered_queryset(self, request):
         """Приватный метод: получает отфильтрованный queryset"""
         search_data = request
-        filters = {}
-        # Получаем конфигурацию
-        config = SearchConfig.objects.get(is_active=True)
+        filters: dict[str, Any] = {}
+        config = self._get_active_config()
+        if config is None:
+            return None, None, filters
+
         # Получаем модель
         model_class = _require_model_class(config.content_type)
         # Строим запрос
@@ -152,7 +163,7 @@ class ListItems(View):
                     query &= Q(**{f"{field_name}__lte": rating_max})
 
         items = _objects(model_class).filter(query)
-        return items, filters
+        return config, items, filters
 
     def _prepare_context(self, request, items, filters, ordering_options, order_by):
         """Подготавливает контекст для шаблона"""
@@ -175,7 +186,22 @@ class ListItems(View):
     def get(self, request, *args, **kwargs):
         """Обработка GET запроса"""
         # Используем свои методы
-        items, filters = self._get_filtered_queryset(request.GET)
+        config, items, filters = self._get_filtered_queryset(request.GET)
+
+        if config is None or items is None:
+            return render(
+                request,
+                "search/search_result.html",
+                {
+                    "items": [],
+                    "filters": {},
+                    "total_items": 0,
+                    "order_by": "",
+                    "order_by_label": "Сортировка недоступна",
+                    "ordering_options": [],
+                    "search_config_missing": True,
+                },
+            )
 
         model_class = cast(type[models.Model], items.model)
         ordering_options = self._get_ordering_options(model_class)

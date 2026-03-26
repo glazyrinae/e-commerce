@@ -50,7 +50,7 @@
   const dedupeBtnChecks = (container) => {
     if (!container) return;
     const seen = new Set();
-    const inputs = Array.from(container.querySelectorAll("input.btn-check"));
+    const inputs = Array.from(container.querySelectorAll('input[type="radio"]'));
     inputs.forEach((input) => {
       const value = String(input.value || "").trim();
       const label = container.querySelector(`label[for="${CSS.escape(input.id)}"]`);
@@ -82,16 +82,13 @@
     return pairs;
   };
 
-  const buildAvailabilityMaps = (pairs) => {
+  const buildSizesByColorMap = (pairs) => {
     const sizesByColor = new Map();
-    const colorsBySize = new Map();
     pairs.forEach(({ color, size }) => {
       if (!sizesByColor.has(color)) sizesByColor.set(color, new Set());
       sizesByColor.get(color).add(size);
-      if (!colorsBySize.has(size)) colorsBySize.set(size, new Set());
-      colorsBySize.get(size).add(color);
     });
-    return { sizesByColor, colorsBySize };
+    return sizesByColor;
   };
 
   const getVariantCnt = (variantsEl, color, size) => {
@@ -114,70 +111,59 @@
     const qtyHidden = form.querySelector('input[name="quantity"]');
     const qtyVisible = form.querySelector("[data-qv-qty]");
 
-    const colorChecked = form.querySelector("[data-qv-colors] input.btn-check:checked");
-    const sizeChecked = form.querySelector("[data-qv-sizes] input.btn-check:checked");
+    const colorChecked = form.querySelector('[data-qv-colors] input[type="radio"]:checked');
+    const sizeChecked = form.querySelector('[data-qv-sizes] input[type="radio"]:checked');
 
     if (colorInput) colorInput.value = colorChecked ? colorChecked.value : "";
     if (sizeInput) sizeInput.value = sizeChecked ? sizeChecked.value : "";
     if (qtyHidden && qtyVisible) qtyHidden.value = String(qtyVisible.value || "1");
   };
 
-  const applyAvailability = (form, maps, direction) => {
-    const colors = Array.from(form.querySelectorAll("[data-qv-colors] input.btn-check"));
-    const sizes = Array.from(form.querySelectorAll("[data-qv-sizes] input.btn-check"));
+  const setLabelDisabled = (form, input, withStrike = false) => {
+    const label = form.querySelector(`label[for="${CSS.escape(input.id)}"]`);
+    if (!label) return;
+    label.classList.toggle("disabled", input.disabled);
+    label.classList.toggle("qv-size-unavailable", withStrike && input.disabled);
+    if (input.disabled) {
+      label.setAttribute("aria-disabled", "true");
+    } else {
+      label.removeAttribute("aria-disabled");
+    }
+  };
+
+  const applyAvailability = (form, sizesByColor) => {
+    const colors = Array.from(form.querySelectorAll('[data-qv-colors] input[type="radio"]'));
+    const sizes = Array.from(form.querySelectorAll('[data-qv-sizes] input[type="radio"]'));
 
     colors.forEach((input) => {
-      input.disabled = !maps.sizesByColor.has(String(input.value));
-      const label = form.querySelector(`label[for="${CSS.escape(input.id)}"]`);
-      if (label) label.classList.toggle("disabled", input.disabled);
-    });
-    sizes.forEach((input) => {
-      input.disabled = !maps.colorsBySize.has(String(input.value));
-      const label = form.querySelector(`label[for="${CSS.escape(input.id)}"]`);
-      if (label) label.classList.toggle("disabled", input.disabled);
+      input.disabled = !sizesByColor.has(String(input.value));
+      setLabelDisabled(form, input, false);
     });
 
-    const checkedColor0 = form.querySelector("[data-qv-colors] input.btn-check:checked");
+    const checkedColor0 = form.querySelector('[data-qv-colors] input[type="radio"]:checked');
     if (!checkedColor0 || checkedColor0.disabled) {
       if (checkedColor0) checkedColor0.checked = false;
       setFirstEnabledChecked(colors);
     }
-    const checkedSize0 = form.querySelector("[data-qv-sizes] input.btn-check:checked");
+    const checkedSize0 = form.querySelector('[data-qv-sizes] input[type="radio"]:checked');
     if (!checkedSize0 || checkedSize0.disabled) {
       if (checkedSize0) checkedSize0.checked = false;
+    }
+
+    const selectedColor = (form.querySelector('[data-qv-colors] input[type="radio"]:checked') || {}).value || "";
+    const allowedSizes = selectedColor ? (sizesByColor.get(selectedColor) || new Set()) : new Set();
+    sizes.forEach((input) => {
+      input.disabled = !selectedColor || !allowedSizes.has(String(input.value));
+      setLabelDisabled(form, input, true);
+    });
+
+    const checkedSize = form.querySelector('[data-qv-sizes] input[type="radio"]:checked');
+    if (checkedSize && checkedSize.disabled) {
+      checkedSize.checked = false;
+    }
+
+    if (!form.querySelector('[data-qv-sizes] input[type="radio"]:checked')) {
       setFirstEnabledChecked(sizes);
-    }
-
-    const selectedColor = (form.querySelector("[data-qv-colors] input.btn-check:checked") || {}).value || "";
-    const selectedSize = (form.querySelector("[data-qv-sizes] input.btn-check:checked") || {}).value || "";
-
-    if (direction === "color" && selectedColor) {
-      const allowedSizes = maps.sizesByColor.get(selectedColor) || new Set();
-      sizes.forEach((input) => {
-        input.disabled = input.disabled || !allowedSizes.has(String(input.value));
-        const label = form.querySelector(`label[for="${CSS.escape(input.id)}"]`);
-        if (label) label.classList.toggle("disabled", input.disabled);
-      });
-      const checkedSize = form.querySelector("[data-qv-sizes] input.btn-check:checked");
-      if (checkedSize && checkedSize.disabled) {
-        checkedSize.checked = false;
-        setFirstEnabledChecked(sizes);
-      }
-      return;
-    }
-
-    if (direction === "size" && selectedSize) {
-      const allowedColors = maps.colorsBySize.get(selectedSize) || new Set();
-      colors.forEach((input) => {
-        input.disabled = input.disabled || !allowedColors.has(String(input.value));
-        const label = form.querySelector(`label[for="${CSS.escape(input.id)}"]`);
-        if (label) label.classList.toggle("disabled", input.disabled);
-      });
-      const checkedColor = form.querySelector("[data-qv-colors] input.btn-check:checked");
-      if (checkedColor && checkedColor.disabled) {
-        checkedColor.checked = false;
-        setFirstEnabledChecked(colors);
-      }
     }
   };
 
@@ -189,8 +175,8 @@
 
     if (!qtyInput) return;
 
-    const color = (form.querySelector("[data-qv-colors] input.btn-check:checked") || {}).value || "";
-    const size = (form.querySelector("[data-qv-sizes] input.btn-check:checked") || {}).value || "";
+    const color = (form.querySelector('[data-qv-colors] input[type="radio"]:checked') || {}).value || "";
+    const size = (form.querySelector('[data-qv-sizes] input[type="radio"]:checked') || {}).value || "";
     const maxQty = getVariantCnt(variantsEl, color, size);
 
     if (maxQty > 0) {
@@ -224,6 +210,20 @@
     return el ? el.value : "";
   };
 
+  const setHeaderCartCount = (count) => {
+    const badge = document.querySelector(".cart-count");
+    if (!badge) return;
+    const parsed = Number.parseInt(String(count), 10);
+    if (!Number.isFinite(parsed) || parsed < 0) return;
+    badge.textContent = String(parsed);
+  };
+
+  const setSubmitInCartState = (submitBtn, text = "Товар в корзине") => {
+    if (!submitBtn) return;
+    submitBtn.textContent = text;
+    submitBtn.dataset.inCart = "1";
+  };
+
   const initForm = (form) => {
     if (!form || form.dataset.qvInit === "1") return;
     form.dataset.qvInit = "1";
@@ -236,25 +236,24 @@
     dedupeBtnChecks(sizesContainer);
 
     const pairs = getPairsInStock(variantsEl);
-    const maps = buildAvailabilityMaps(pairs);
+    const sizesByColor = buildSizesByColorMap(pairs);
 
-    const colorInputs = Array.from(form.querySelectorAll("[data-qv-colors] input.btn-check"));
-    const sizeInputs = Array.from(form.querySelectorAll("[data-qv-sizes] input.btn-check"));
+    const colorInputs = Array.from(form.querySelectorAll('[data-qv-colors] input[type="radio"]'));
+    const sizeInputs = Array.from(form.querySelectorAll('[data-qv-sizes] input[type="radio"]'));
 
-    if (!form.querySelector("[data-qv-colors] input.btn-check:checked")) {
+    if (!form.querySelector('[data-qv-colors] input[type="radio"]:checked')) {
       setFirstEnabledChecked(colorInputs);
     }
-    const checkedSizeOnInit = form.querySelector("[data-qv-sizes] input.btn-check:checked");
+    const checkedSizeOnInit = form.querySelector('[data-qv-sizes] input[type="radio"]:checked');
     if (checkedSizeOnInit) checkedSizeOnInit.checked = false;
 
-    applyAvailability(form, maps, "color");
+    applyAvailability(form, sizesByColor);
     applyMaxQty(form);
     syncHidden(form);
 
     form.addEventListener("change", (event) => {
-      if (event.target && event.target.matches("[data-qv-colors] input.btn-check, [data-qv-sizes] input.btn-check")) {
-        const direction = event.target.closest("[data-qv-colors]") ? "color" : "size";
-        applyAvailability(form, maps, direction);
+      if (event.target && event.target.matches('[data-qv-colors] input[type="radio"], [data-qv-sizes] input[type="radio"]')) {
+        applyAvailability(form, sizesByColor);
         applyMaxQty(form);
         syncHidden(form);
       }
@@ -303,15 +302,15 @@
       const maxQty = getVariantCnt(form.querySelector("[data-qv-variants]"), color, size);
 
       if (!productId || !color || !size) {
-        alert("Выберите цвет и размер.");
+        showStockMsg(form, "Выберите цвет и размер.");
         return;
       }
       if (!(maxQty > 0)) {
-        alert("Этого варианта нет в наличии.");
+        showStockMsg(form, "Этого варианта нет в наличии.");
         return;
       }
       if (quantity > maxQty) {
-        alert(`В наличии только ${maxQty} шт.`);
+        showStockMsg(form, `В наличии только ${maxQty} шт.`);
         return;
       }
 
@@ -320,7 +319,7 @@
       if (submitBtn) submitBtn.disabled = true;
 
       try {
-        const res = await fetch("/test/", {
+        const res = await fetch(`/basket/cart/${productId}`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -329,12 +328,22 @@
           },
           body: JSON.stringify({ product_id: productId, color, size, quantity }),
         });
-        const text = await res.text();
-        if (!res.ok) throw new Error(text || `HTTP ${res.status}`);
-        console.log("QuickView /test/ ok:", text);
+        const data = await res.json().catch(() => ({}));
+
+        if (res.status === 401 && data.login_url) {
+          window.location.href = data.login_url;
+          return;
+        }
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || `HTTP ${res.status}`);
+        }
+
+        setSubmitInCartState(submitBtn, data.button_text || "Товар в корзине");
+        setHeaderCartCount(data.cart_total_items);
+        showStockMsg(form, data.message || "Товар добавлен в корзину.");
       } catch (e) {
-        console.error("QuickView /test/ error:", e);
-        alert("Ошибка отправки. Проверьте роут /test/.");
+        console.error("QuickView /basket/cart error:", e);
+        showStockMsg(form, "Ошибка отправки. Проверьте параметры товара.");
       } finally {
         if (submitBtn) submitBtn.disabled = false;
       }

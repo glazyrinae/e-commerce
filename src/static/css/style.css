@@ -1628,3 +1628,9 @@ a.text-hover:focus:after {
     opacity: 1 !important;
   }  
 }
+
+.qv-size-unavailable {
+  text-decoration: line-through;
+  opacity: 0.55;
+  cursor: not-allowed;
+}

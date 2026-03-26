@@ -50,57 +50,63 @@
                 <a href="#reviews" class="blue-href text-decoration-none">Посмотреть все отзывы</a>
             </div>
             
-            <div class="mb-4">
-                <h5>Цвет</h5>
-                <div class="d-flex">
-                    {% for color in colors %}
-                    <div class="form-check me-3">
-                        <input class="form-check-input" type="radio" name="color" id="colorBlack">
-                        <label class="form-check-label" for="colorBlack">
-                            {{color}}
-                        </label>
+            <form data-qv-form="{{ product.id }}">
+                {% csrf_token %}
+                <input type="hidden" name="product_id" value="{{ product.id }}">
+                <input type="hidden" name="color" value="">
+                <input type="hidden" name="size" value="">
+                <input type="hidden" name="quantity" value="1">
+
+                <div class="mb-4">
+                    <h5>Цвет</h5>
+                    <div class="d-flex flex-wrap" data-qv-colors>
+                        {% for color, items in colors_grouped.items %}
+                        <div class="form-check me-3">
+                            <input class="form-check-input" type="radio" name="qv_color_{{ product.id }}" id="color_{{ product.id }}_{{ forloop.counter }}" value="{{ color }}">
+                            <label class="form-check-label" for="color_{{ product.id }}_{{ forloop.counter }}">
+                                {{ color }}
+                            </label>
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
-                    <!-- <div class="form-check me-3">
-                        <input class="form-check-input" type="radio" name="color" id="colorBlue" checked>
-                        <label class="form-check-label" for="colorBlue">
-                            Синий
-                        </label>
+                </div>
+
+                <div class="mb-4">
+                    <h5>Размер</h5>
+                    <div class="d-flex flex-wrap gap-2" data-qv-sizes>
+                        {% for color, items in colors_grouped.items %}
+                            {% for item in items %}
+                                {% if item.cnt > 0 %}
+                                    <input class="detail-size-radio d-none" type="radio" autocomplete="off" name="qv_size_{{ product.id }}" id="size_{{ product.id }}_{{ forloop.parentloop.counter }}_{{ forloop.counter }}" value="{{ item.size }}">
+                                    <label class="size-option border rounded p-2 text-center mb-0" style="width: 50px;" for="size_{{ product.id }}_{{ forloop.parentloop.counter }}_{{ forloop.counter }}">
+                                        {{ item.size }}
+                                    </label>
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
                     </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="color" id="colorGray">
-                        <label class="form-check-label" for="colorGray">
-                            Серый
-                        </label>
-                    </div> -->
+                    <a href="#" class="blue-href d-block mt-2 text-decoration-none">Таблица размеров</a>
                 </div>
-            </div>
-            
-            <div class="mb-4">
-                <h5>Размер</h5>
-                <div class="d-flex flex-wrap gap-2" >
-                    {% for size in sizes %}
-                        <!-- <div class="size-option border rounded p-2 text-center text-decoration-line-through" style="width: 50px;">38</div>
-                        <div class="size-option border rounded p-2 text-center" style="width: 50px;">39</div>
-                        <div class="size-option border rounded p-2 text-center active" style="width: 50px;">40</div>
-                        <div class="size-option border rounded p-2 text-center" style="width: 50px;">41</div>
-                        <div class="size-option border rounded p-2 text-center" style="width: 50px;">42</div>
-                        <div class="size-option border rounded p-2 text-center" style="width: 50px;">43</div> -->
-                        <div class="size-option border rounded p-2 text-center" style="width: 50px;">{{size}}</div>
+
+                <div class="d-none" data-qv-variants>
+                    {% for color, items in colors_grouped.items %}
+                        {% for item in items %}
+                            <span data-color="{{ color }}" data-size="{{ item.size }}" data-cnt="{{ item.cnt|default:0 }}" data-store-id="{{ item.store_id }}"></span>
+                        {% endfor %}
                     {% endfor %}
                 </div>
-                <a href="#" class="blue-href d-block mt-2 text-decoration-none">Таблица размеров</a>
-            </div>
-            
-            <div class="d-flex gap-3 mb-4">
-                <div class="input-group" style="width: 120px;">
-                    <button class="btn btn-outline-secondary btn-minus" type="button">-</button>
-                    <input type="text" class="form-control text-center cnt-good" readonly value="1">
-                    <button class="btn btn-outline-secondary btn-plus" type="button">+</button>
+
+                <div class="d-flex gap-3 mb-2">
+                    <div class="input-group" style="width: 120px;">
+                        <button class="btn btn-outline-secondary btn-minus" type="button" data-qv-qty-minus>-</button>
+                        <input type="number" class="form-control text-center cnt-good" value="1" min="1" data-qv-qty>
+                        <button class="btn btn-outline-secondary btn-plus" type="button" data-qv-qty-plus>+</button>
+                    </div>
+                    <button class="btn btn-danger flex-grow-1" type="submit" data-qv-submit><i class="bi bi-cart-fill me-2"></i>Добавить в корзину</button>
+                    <button class="btn btn-outline-secondary" type="button"><i class="bi bi-heart"></i></button>
                 </div>
-                <button class="btn btn-danger flex-grow-1"><i class="bi bi-cart-fill me-2"></i>Добавить в корзину</button>
-                <button class="btn btn-outline-secondary"><i class="bi bi-heart"></i></button>
-            </div>
+                <div class="text-danger small mb-4" style="display: none;" data-qv-stock-msg></div>
+            </form>
             
             <div class="card mb-4">
                 <div class="card-body">
@@ -212,9 +218,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block js %}
-{{ block.super }}
-<script src="{% static 'products/js/detail.js' %}"></script>
 {% endblock %}

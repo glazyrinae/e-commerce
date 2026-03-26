@@ -1,0 +1,53 @@
+.product-img {
+    height: 200px;
+    object-fit: contain;
+}
+
+.discount-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 0.9rem;
+}
+
+.size-option {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.size-option:hover,
+.size-option.active {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.cart-item-img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+}
+
+.offcanvas-cart {
+    width: 400px;
+}
+
+.btn {
+    --bs-btn-border-radius: 0.25rem;
+}
+
+.banner-content .banner-title,
+.card .card-title {
+    font-weight: 600;
+    line-height: 1em;
+    letter-spacing: 0;
+}
+
+.blue-href {
+    color: rgb(13 110 253);
+}
+
+@media (max-width: 768px) {
+    .offcanvas-cart {
+        width: 100%;
+    }
+}

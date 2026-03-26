@@ -1,5 +1,8 @@
 {% load static %}
 
+
+{% if is_show %}
+
 <div class="comments-widget" 
      data-content-type-id="{{ content_type_id }}" 
      data-object-id="{{ object_id }}"
@@ -141,10 +144,10 @@
         <!-- Список -->
         <ul class="comments-list">
             <!-- Комментарии загружаются через JS -->
-            <div class="loading-indicator" style="display: none;">
+            <li class="loading-indicator" style="display: none;">
                 <div class="spinner"></div>
                 <p>Загрузка комментариев...</p>
-            </div>
+            </li>
         </ul>
         
         <!-- Пагинация -->
@@ -241,3 +244,8 @@
 
 <!-- Подключаем скрипты -->
 <script src="{% static 'comments/js/comments.js' %}"></script>
+
+{% else %}
+
+<div class="comments-widget">Чтобы оставить комментарии нужно авторизоваться</div>
+{% endif %}

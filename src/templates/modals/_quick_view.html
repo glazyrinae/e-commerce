@@ -8,14 +8,18 @@
       <div class="modal-body">
         <div class="col-lg-12 col-md-12 me-3">
           <div class="image-holder d-flex justify-content-center">
-            <img class="img-fluid d-block mx-auto" src="/media/{{  object.product.get_path_image_thumbnail }}" alt="{{ object.product.title }}">
+            <a href="{% url 'product' object.slug object.product.pk %}" class="d-block" target="_blank" rel="noopener noreferrer">
+              <img class="img-fluid d-block mx-auto" src="{{ MEDIA_URL }}{{ object.product.get_path_image_thumbnail }}" alt="{{ object.product.title }}">
+            </a>
           </div>
         </div>
         <div class="col-lg-12 col-md-12">
           <div class="summary">
             <div class="summary-content fs-6">
               <div class="product-header d-flex justify-content-between mt-4">
-                <h3 class="display-7">{{ object.product.title }}</h3>
+                <h3 class="display-7">
+                  <a href="{% url 'product' object.slug object.product.pk %}" target="_blank" rel="noopener noreferrer">{{ object.product.title }}</a>
+                </h3>
                 <div class="modal-close-btn">
                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                   </button>

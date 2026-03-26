@@ -7,7 +7,7 @@ register = template.Library()
 
 
 @register.inclusion_tag("comments/widget.html", takes_context=True)
-def comments_widget(context, obj, show_form=True, show_stats=True):
+def comments_widget(context, obj, show_form=False, show_stats=True):
     """
     Вставка виджета комментариев в шаблон.
 
@@ -30,6 +30,7 @@ def comments_widget(context, obj, show_form=True, show_stats=True):
 
     return {
         "object": obj,
+        "is_show": (request.user.is_authenticated if request else False),
         "stats": stats,
         "user_comment": user_comment,
         "show_form": show_form,

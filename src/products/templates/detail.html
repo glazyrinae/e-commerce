@@ -1,52 +1,10 @@
 {% extends 'base/base.html' %}
 {% load static %}
 {% load filters %}
+{% load comments_tags %}
 {% block css %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <style>
-        .product-img {
-            height: 200px;
-            object-fit: contain;
-        }
-        .discount-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 0.9rem;
-        }
-        .size-option {
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .size-option:hover, .size-option.active {
-            background-color: #0d6efd;
-            color: white;
-        }
-        .cart-item-img {
-            width: 80px;
-            height: 80px;
-            object-fit: contain;
-        }
-        .offcanvas-cart {
-            width: 400px;
-        }
-        .btn {
-            --bs-btn-border-radius: 0.25rem;
-        }
-        .banner-content .banner-title, .card .card-title {
-            font-weight: 600;
-            line-height: 1em;
-            letter-spacing: 0;
-        }
-        .blue-href {
-            color: rgb(13 110 253)
-        }
-        @media (max-width: 768px) {
-            .offcanvas-cart {
-                width: 100%;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'products/css/detail.css' %}">
 {% endblock %}
 {% block content %}
 <!-- Основной контент -->
@@ -212,7 +170,7 @@
                     </table>
                 </div>
                 <div class="tab-pane fade" id="reviews" role="tabpanel">
-                    <div class="mb-4">
+                    {% comment %} <div class="mb-4">
                         <h4>Отзывы о товаре</h4>
                         <button class="btn btn-primary">Написать отзыв</button>
                     </div>
@@ -231,8 +189,8 @@
                             <h6 class="card-subtitle mb-2 text-muted">20 мая 2023</h6>
                             <p class="card-text">Отличные кроссовки! Очень удобные, ноги не устают даже после длительных пробежек. Качество на высоте.</p>
                         </div>
-                    </div>
-                    <div class="card">
+                    </div> {% endcomment %}
+                    {% comment %} <div class="card">
                         <div class="card-body">
                             <div class="d-flex justify-content-between mb-2">
                                 <h5 class="card-title">Екатерина</h5>
@@ -247,44 +205,16 @@
                             <h6 class="card-subtitle mb-2 text-muted">15 апреля 2023</h6>
                             <p class="card-text">Хорошие кроссовки, но немного жестковаты в первые дни носки. Через неделю разносятся и становятся очень удобными.</p>
                         </div>
-                    </div>
+                    </div> {% endcomment %}
+                    {% comments_widget product show_form=False show_stats=False %}
                 </div>
             </div>
         </div>
     </div>
 </div>
-</div>
 {% endblock %}
 
 {% block js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const cnt = document.getElementsByClassName('cnt-good')[0];
-    const loadBtnMinus = document.getElementsByClassName('btn-minus')[0];
-    const loadBtnPlus = document.getElementsByClassName('btn-plus')[0];
-
-    if (loadBtnMinus && cnt) {
-        loadBtnMinus.addEventListener('click', minus_good);
-    } 
-
-    if (loadBtnPlus && cnt) {
-        loadBtnPlus.addEventListener('click', plus_good);
-    }   
-
-    function minus_good() {
-        let currentValue = parseInt(cnt.value) || 0;
-        if (currentValue > 0){
-            cnt.value = currentValue - 1;
-        } 
-    }
-
-    function plus_good() {
-        let currentValue = parseInt(cnt.value) || 0;
-        cnt.value = currentValue + 1;
-    }
-});
-</script>
-<script src="{% static "js/jquery-1.11.0.min.js" %}"></script> 
-<script src="{% static "js/plugins.js" %}"></script> 
-<script src="{% static "js/script.js" %}"></script> 
+{{ block.super }}
+<script src="{% static 'products/js/detail.js' %}"></script>
 {% endblock %}

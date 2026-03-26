@@ -757,14 +757,14 @@
             if (!commentsList) return;
             
             commentsList.innerHTML = `
-                <div class="empty-state">
+                <li class="empty-state">
                     <div class="empty-icon">💬</div>
                     <h4 class="empty-title">Пока нет комментариев</h4>
                     <p class="empty-text">Будьте первым, кто оставит отзыв!</p>
                     <button type="button" class="btn btn-primary add-comment-btn">
                         Оставить комментарий
                     </button>
-                </div>
+                </li>
             `;
             
             // Добавляем обработчик кнопки
@@ -781,14 +781,14 @@
             if (!commentsList) return;
             
             commentsList.innerHTML = `
-                <div class="empty-state">
+                <li class="empty-state">
                     <div class="empty-icon text-danger">⚠️</div>
                     <h4 class="empty-title">Ошибка загрузки</h4>
                     <p class="empty-text">Не удалось загрузить комментарии. Пожалуйста, попробуйте позже.</p>
                     <button type="button" class="btn btn-outline-primary" onclick="location.reload()">
                         Обновить страницу
                     </button>
-                </div>
+                </li>
             `;
         }
         

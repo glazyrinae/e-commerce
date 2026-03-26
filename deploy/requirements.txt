@@ -15,6 +15,7 @@ dj-database-url==1.2.0
 
 # Работа с тегами
 django-taggit==3.0.0
+django-sekizai>=4.1.0,<5.0.0
 
 # Конфигурация и переменные окружения
 environs[django]>=9.0.0

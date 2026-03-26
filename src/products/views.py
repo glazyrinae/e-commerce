@@ -75,12 +75,14 @@ def get_products(products: list[Products]) -> list[ProductViewData]:
         # Безопасное получение атрибутов продукта
         product_title = getattr(product, "title", "Без названия")
         category = getattr(product, "category", None)
+        slug = getattr(category, "slug", None)
         category_title = getattr(category, "title", "Без категории")
         total_cnt = sum(getattr(item, "cnt", 0) for item in store_items)
 
         available_products.append(
             {
                 "product": product,
+                "slug": slug,
                 "product_title": product_title,
                 "product_category": category_title,
                 "product_total_cnt": total_cnt,
@@ -132,9 +134,7 @@ def load_more_content(request: HttpRequest, category_slug: str) -> JsonResponse:
     return JsonResponse({"html": html_content, "has_next": page_obj.has_next()})
 
 
-def product(
-    request: HttpRequest, category_slug: str, product_id: int
-) -> HttpResponse:
+def product(request: HttpRequest, category_slug: str, product_id: int) -> HttpResponse:
     # del request.session["cart"]
     product = get_object_or_404(
         Products.objects.select_related("category"),

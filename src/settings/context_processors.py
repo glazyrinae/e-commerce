@@ -1,4 +1,6 @@
 from .models import MenuItem, Settings
+from basket.models import Basket
+from django.db.models import Sum
 
 
 def site_settings(request):
@@ -10,6 +12,14 @@ def site_settings(request):
     url_parts = request.path.split("/")
     url_parts = [url_part for url_part in url_parts if url_part]
     active = url_parts[0] if len(url_parts) > 0 else "home"
+    total_qty = 0
+    if request.user:
+        total_qty = (
+            Basket.objects.filter(user=request.user).aggregate(total=Sum("quantity"))[
+                "total"
+            ]
+            or 0
+        )
 
     menu_items = (
         MenuItem.objects.select_related("category")
@@ -19,6 +29,7 @@ def site_settings(request):
 
     return {
         "active": active,
+        "basket": total_qty,
         "site_settings": settings,
         "description": settings.description if settings else "",
         "title": settings.title if settings else "Мой магазин",

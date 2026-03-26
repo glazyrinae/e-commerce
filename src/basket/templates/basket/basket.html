@@ -3,6 +3,7 @@
 {% block content %}
 <!-- Основной контент -->
 <div class="container mb-5">
+    <input type="hidden" id="js-csrf-token" value="{{ csrf_token }}">
     <div class="shopping-cart">
         <div class="shopping-cart-content" id="js-cart-content">
         <div id="js-cart-list" data-basket-url="{% url 'basket' %}">
@@ -26,14 +27,14 @@
                     <div class="quantity-price d-flex justify-content-between align-items-center">
                     <div class="input-group product-qty">
                         <button type="button"
-                        class="quantity-left-minus btn btn-light rounded-0 rounded-start btn-number js-qty-btn"
+                        class="btn btn-light rounded-0 rounded-start btn-number js-qty-btn"
                         data-type="minus">
                             <svg width="16" height="16">
                                 <use xlink:href="#minus"></use>
                             </svg>
                         </button>
                         <input type="text" name="quantity" class="form-control input-number quantity js-qty-input text-center" value="{{ item.quantity }}" readonly>
-                        <button type="button" class="quantity-right-plus btn btn-light rounded-0 rounded-end btn-number js-qty-btn"
+                        <button type="button" class="btn btn-light rounded-0 rounded-end btn-number js-qty-btn"
                         data-type="plus">
                         <svg width="16" height="16">
                             <use xlink:href="#plus"></use>
@@ -79,5 +80,5 @@
 
 {% block js %}
 {{ block.super }}
-<script src="{% static 'basket/js/basket.js' %}"></script>
+<script src="{% static 'js/basket.js' %}"></script>
 {% endblock %}

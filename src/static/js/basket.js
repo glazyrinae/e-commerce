@@ -10,12 +10,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const summaryEl = document.getElementById("js-cart-summary");
   const actionsEl = document.getElementById("js-cart-actions");
   const emptyEl = document.getElementById("js-empty-cart");
+  const csrfEl = document.getElementById("js-csrf-token");
 
   const getCookie = (name) => {
     const cookieValue = document.cookie
       .split("; ")
       .find((row) => row.startsWith(`${name}=`));
     return cookieValue ? decodeURIComponent(cookieValue.split("=")[1]) : "";
+  };
+
+  const getCsrfToken = () => {
+    const cookieToken = getCookie("csrftoken");
+    if (cookieToken) return cookieToken;
+    return csrfEl ? String(csrfEl.value || "") : "";
   };
 
   const showRowMessage = (row, message) => {
@@ -39,6 +46,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const updateTotals = (totalItems, totalPrice) => {
     if (totalItemsEl) totalItemsEl.textContent = String(totalItems);
     if (totalPriceEl) totalPriceEl.textContent = String(totalPrice);
+    const headerCartCount = document.querySelector(".cart-count");
+    if (headerCartCount) headerCartCount.textContent = String(totalItems);
     setCartEmptyState(Number(totalItems) === 0);
   };
 
@@ -90,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
+          "X-CSRFToken": getCsrfToken(),
           "X-Requested-With": "XMLHttpRequest",
         },
         body: JSON.stringify({

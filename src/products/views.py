@@ -131,13 +131,17 @@ def load_more_content(request: HttpRequest, category_slug: str) -> JsonResponse:
     paginator = Paginator(available_products, items_per_page)
     page_obj = paginator.get_page(page_number)
 
-    html_content = render_to_string("ajax/items_partial.html", {"objects": page_obj})
+    html_content = render_to_string(
+        "items_partial.html",
+        {"objects": page_obj},
+        request=request,
+    )
 
     return JsonResponse({"html": html_content, "has_next": page_obj.has_next()})
 
 
 def product(request: HttpRequest, category_slug: str, product_id: int) -> HttpResponse:
-    # del request.session["cart"]
+
     product = get_object_or_404(
         Products.objects.select_related("category"),
         category__slug=category_slug,
@@ -153,22 +157,3 @@ def product(request: HttpRequest, category_slug: str, product_id: int) -> HttpRe
     )
 
     return render(request, "detail.html", item)
-
-
-# AJAX
-def load_modal_content(request: HttpRequest, category_slug: str) -> JsonResponse:
-    page_number = request.GET.get("page", 1)
-    items_per_page = 3
-
-    products_qs = (
-        Products.objects.select_related("category")
-        .filter(category__slug=category_slug)
-        .order_by("-created_at")
-    )
-
-    paginator = Paginator(products_qs, items_per_page)
-    page_obj = paginator.get_page(page_number)
-
-    html_content = render_to_string("ajax/items_partial.html", {"products": page_obj})
-
-    return JsonResponse({"html": html_content, "has_next": page_obj.has_next()})

@@ -104,75 +104,75 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     }
 
-    if (modalLong) {
-        modalLong.addEventListener("show.bs.modal", (event) => {
-            const button = event.relatedTarget;
-            const productId = button?.getAttribute("data-product_id");
-            if (!productId) return;
+    // if (modalLong) {
+    //     modalLong.addEventListener("show.bs.modal", (event) => {
+    //         const button = event.relatedTarget;
+    //         const productId = button?.getAttribute("data-product_id");
+    //         if (!productId) return;
 
-            fetch(`/basket/cart/${productId}`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": csrfToken || "",
-                    "X-Requested-With": "XMLHttpRequest",
-                },
-            })
-                .then((response) => response.json())
-                .then((product) => {
-                    document.getElementById("modalProductContent").innerHTML = `
-                      <div class="mini-cart cart-list p-0 mt-3">
-                        <div class="mini-cart-item d-flex pb-3">
-                          <div class="col-lg-2 col-md-3 col-sm-2 me-4">
-                              <a href="#" title="product-image">
-                              <img src='${product.img}' class="img-fluid" alt="single-product-item">
-                              </a>
-                          </div>
-                          <div class="col-lg-9 col-md-8 col-sm-8">
-                              <div class="product-header d-flex justify-content-between align-items-center mb-3">
-                              <h4 class="product-title fs-6 me-5">${product.name}</h4>
-                              </div>
-                              <div class="quantity-price d-flex justify-content-between align-items-center">
-                              <div class="input-group product-qty">
-                                  <button type="button"
-                                  class="quantity-left-minus btn btn-light rounded-0 rounded-start btn-number"
-                                  data-type="minus">
-                                      <svg width="16" height="16">
-                                          <use xlink:href="#minus"></use>
-                                      </svg>
-                                  </button>
-                                  <input type="text" name="quantity" class="form-control input-number quantity" data-prodId="${product.id}" value="${product.quantity}" />
-                                  <button type="button" class="quantity-right-plus btn btn-light rounded-0 rounded-end btn-number"
-                                  data-type="plus">
-                                  <svg width="16" height="16">
-                                      <use xlink:href="#plus"></use>
-                                  </svg>
-                                  </button>
-                              </div>
-                              <div class="price-code">
-                                  <span class="product-price fs-6">${product.price}</span>
-                              </div>
-                              </div>
-                          </div>
-                        </div>
-                      </div>
-                    <div class="modal-footer my-4 justify-content-center">
-                        <button type="button" class="btn btn-red hvr-sweep-to-right dark-sweep">Заказать</button>
-                        <button type="button"
-                        class="btn btn-outline-gray hvr-sweep-to-right dark-sweep">Перейти в корзину</button>
-                    </div>
-                    `;
-                })
-                .catch((error) => {
-                    console.error("Ошибка загрузки товара:", error);
-                    document.getElementById("modalProductContent").innerHTML = `
-                        <div class="alert alert-danger">
-                            Ошибка загрузки товара
-                        </div>
-                    `;
-                });
-        });
-    }
+    //         fetch(`/basket/cart/${productId}`, {
+    //             method: "POST",
+    //             headers: {
+    //                 "Content-Type": "application/json",
+    //                 "X-CSRFToken": csrfToken || "",
+    //                 "X-Requested-With": "XMLHttpRequest",
+    //             },
+    //         })
+    //             .then((response) => response.json())
+    //             .then((product) => {
+    //                 document.getElementById("modalProductContent").innerHTML = `
+    //                   <div class="mini-cart cart-list p-0 mt-3">
+    //                     <div class="mini-cart-item d-flex pb-3">
+    //                       <div class="col-lg-2 col-md-3 col-sm-2 me-4">
+    //                           <a href="#" title="product-image">
+    //                           <img src='${product.img}' class="img-fluid" alt="single-product-item">
+    //                           </a>
+    //                       </div>
+    //                       <div class="col-lg-9 col-md-8 col-sm-8">
+    //                           <div class="product-header d-flex justify-content-between align-items-center mb-3">
+    //                           <h4 class="product-title fs-6 me-5">${product.name}</h4>
+    //                           </div>
+    //                           <div class="quantity-price d-flex justify-content-between align-items-center">
+    //                           <div class="input-group product-qty">
+    //                               <button type="button"
+    //                               class="quantity-left-minus btn btn-light rounded-0 rounded-start btn-number"
+    //                               data-type="minus">
+    //                                   <svg width="16" height="16">
+    //                                       <use xlink:href="#minus"></use>
+    //                                   </svg>
+    //                               </button>
+    //                               <input type="text" name="quantity" class="form-control input-number quantity" data-prodId="${product.id}" value="${product.quantity}" />
+    //                               <button type="button" class="quantity-right-plus btn btn-light rounded-0 rounded-end btn-number"
+    //                               data-type="plus">
+    //                               <svg width="16" height="16">
+    //                                   <use xlink:href="#plus"></use>
+    //                               </svg>
+    //                               </button>
+    //                           </div>
+    //                           <div class="price-code">
+    //                               <span class="product-price fs-6">${product.price}</span>
+    //                           </div>
+    //                           </div>
+    //                       </div>
+    //                     </div>
+    //                   </div>
+    //                 <div class="modal-footer my-4 justify-content-center">
+    //                     <button type="button" class="btn btn-red hvr-sweep-to-right dark-sweep">Заказать</button>
+    //                     <button type="button"
+    //                     class="btn btn-outline-gray hvr-sweep-to-right dark-sweep">Перейти в корзину</button>
+    //                 </div>
+    //                 `;
+    //             })
+    //             .catch((error) => {
+    //                 console.error("Ошибка загрузки товара:", error);
+    //                 document.getElementById("modalProductContent").innerHTML = `
+    //                     <div class="alert alert-danger">
+    //                         Ошибка загрузки товара
+    //                     </div>
+    //                 `;
+    //             });
+    //     });
+    // }
 
     function loadMoreContent() {
         if (!loadMoreBtn || !contentContainer || !loadingIndicator) return;

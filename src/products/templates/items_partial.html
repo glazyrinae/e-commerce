@@ -1,0 +1,7 @@
+{% load static %}
+
+{% for object in objects %}
+{% include 'modals/_product_card.html' with object=object %}
+{% endfor %}
+
+{% include 'modals/_quick_view.html' with objects=objects %}

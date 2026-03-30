@@ -13,7 +13,7 @@ def site_settings(request):
     url_parts = [url_part for url_part in url_parts if url_part]
     active = url_parts[0] if len(url_parts) > 0 else "home"
     total_qty = 0
-    if request.user:
+    if request.user.is_authenticated:
         total_qty = (
             Basket.objects.filter(user=request.user).aggregate(total=Sum("quantity"))[
                 "total"

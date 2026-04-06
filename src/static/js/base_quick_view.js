@@ -73,7 +73,8 @@
     if (!variantsEl) return pairs;
     variantsEl.querySelectorAll("span[data-cnt]").forEach((el) => {
       const cnt = Number.parseInt(el.dataset.cnt || "0", 10);
-      if (!(cnt > 0)) return;
+      const inBasket = String(el.dataset.inBasket || "0") === "1";
+      if (!(cnt > 0) && !inBasket) return;
       const color = (el.dataset.color || "").trim();
       const size = (el.dataset.size || "").trim();
       if (!color || !size) return;
@@ -98,6 +99,15 @@
         && String((el.dataset.size || "").trim()) === String(size).trim();
     });
     return match ? (Number.parseInt(match.dataset.cnt || "0", 10) || 0) : 0;
+  };
+
+  const isVariantInBasket = (variantsEl, color, size) => {
+    if (!variantsEl || !color || !size) return false;
+    const match = Array.from(variantsEl.querySelectorAll("span[data-cnt]")).find((el) => {
+      return String((el.dataset.color || "").trim()) === String(color).trim()
+        && String((el.dataset.size || "").trim()) === String(size).trim();
+    });
+    return !!match && String(match.dataset.inBasket || "0") === "1";
   };
 
   const setFirstEnabledChecked = (inputs) => {
@@ -178,6 +188,7 @@
     const color = (form.querySelector('[data-qv-colors] input[type="radio"]:checked') || {}).value || "";
     const size = (form.querySelector('[data-qv-sizes] input[type="radio"]:checked') || {}).value || "";
     const maxQty = getVariantCnt(variantsEl, color, size);
+    const inBasket = isVariantInBasket(variantsEl, color, size);
 
     if (maxQty > 0) {
       qtyInput.max = String(maxQty);
@@ -190,7 +201,15 @@
     if (String(clamped) !== String(qtyInput.value || "")) qtyInput.value = String(clamped);
 
     if (plusBtn) plusBtn.classList.toggle("disabled", maxQty > 0 && clamped >= maxQty);
-    if (submitBtn) submitBtn.disabled = !(color && size && maxQty > 0);
+    if (submitBtn) {
+      if (!submitBtn.dataset.defaultText) {
+        submitBtn.dataset.defaultText = (submitBtn.textContent || "").trim();
+      }
+      submitBtn.disabled = inBasket || !(color && size && maxQty > 0);
+      submitBtn.textContent = inBasket
+        ? "Товар уже в корзине"
+        : (submitBtn.dataset.defaultText || "В корзину");
+    }
   };
 
   const showStockMsg = (form, text) => {
@@ -216,12 +235,6 @@
     const parsed = Number.parseInt(String(count), 10);
     if (!Number.isFinite(parsed) || parsed < 0) return;
     badge.textContent = String(parsed);
-  };
-
-  const setSubmitInCartState = (submitBtn, text = "Товар в корзине") => {
-    if (!submitBtn) return;
-    submitBtn.textContent = text;
-    submitBtn.dataset.inCart = "1";
   };
 
   const initForm = (form) => {
@@ -299,7 +312,9 @@
       const color = (form.querySelector('input[name="color"]') || {}).value || "";
       const size = (form.querySelector('input[name="size"]') || {}).value || "";
       const quantity = Number.parseInt(((form.querySelector('input[name="quantity"]') || {}).value || "1"), 10) || 1;
-      const maxQty = getVariantCnt(form.querySelector("[data-qv-variants]"), color, size);
+      const variantsEl = form.querySelector("[data-qv-variants]");
+      const maxQty = getVariantCnt(variantsEl, color, size);
+      const inBasket = isVariantInBasket(variantsEl, color, size);
 
       if (!productId || !color || !size) {
         showStockMsg(form, "Выберите цвет и размер.");
@@ -307,6 +322,10 @@
       }
       if (!(maxQty > 0)) {
         showStockMsg(form, "Этого варианта нет в наличии.");
+        return;
+      }
+      if (inBasket) {
+        showStockMsg(form, "Товар уже в корзине.");
         return;
       }
       if (quantity > maxQty) {
@@ -338,14 +357,21 @@
           throw new Error(data.error || `HTTP ${res.status}`);
         }
 
-        setSubmitInCartState(submitBtn, data.button_text || "Товар в корзине");
+        const selectedVariant = variantsEl
+          ? Array.from(variantsEl.querySelectorAll("span[data-cnt]")).find((el) => {
+            return String((el.dataset.color || "").trim()) === String(color).trim()
+              && String((el.dataset.size || "").trim()) === String(size).trim();
+          })
+          : null;
+        if (selectedVariant) selectedVariant.dataset.inBasket = "1";
+        if (submitBtn) submitBtn.textContent = data.button_text || "Товар уже в корзине";
         setHeaderCartCount(data.cart_total_items);
         showStockMsg(form, data.message || "Товар добавлен в корзину.");
       } catch (e) {
         console.error("QuickView /basket/cart error:", e);
         showStockMsg(form, "Ошибка отправки. Проверьте параметры товара.");
       } finally {
-        if (submitBtn) submitBtn.disabled = false;
+        applyMaxQty(form);
       }
     });
   };

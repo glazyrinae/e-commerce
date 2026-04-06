@@ -11,9 +11,4 @@ urlpatterns = [
         views.load_more_content,
         name="load_more_content",
     ),
-    path(
-        "load-modal-product/<int:product_id>",
-        views.load_modal_content,
-        name="load_modal_content",
-    ),
 ]

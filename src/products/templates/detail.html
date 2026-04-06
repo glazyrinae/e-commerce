@@ -76,7 +76,7 @@
                     <div class="d-flex flex-wrap gap-2" data-qv-sizes>
                         {% for color, items in colors_grouped.items %}
                             {% for item in items %}
-                                {% if item.cnt > 0 %}
+                                {% if item.cnt > 0 or item.in_basket %}
                                     <input class="detail-size-radio d-none" type="radio" autocomplete="off" name="qv_size_{{ product.id }}" id="size_{{ product.id }}_{{ forloop.parentloop.counter }}_{{ forloop.counter }}" value="{{ item.size }}">
                                     <label class="size-option border rounded p-2 text-center mb-0" style="width: 50px;" for="size_{{ product.id }}_{{ forloop.parentloop.counter }}_{{ forloop.counter }}">
                                         {{ item.size }}
@@ -91,7 +91,7 @@
                 <div class="d-none" data-qv-variants>
                     {% for color, items in colors_grouped.items %}
                         {% for item in items %}
-                            <span data-color="{{ color }}" data-size="{{ item.size }}" data-cnt="{{ item.cnt|default:0 }}" data-store-id="{{ item.store_id }}"></span>
+                            <span data-color="{{ color }}" data-size="{{ item.size }}" data-cnt="{{ item.cnt|default:0 }}" data-store-id="{{ item.store_id }}" data-in-basket="{% if item.in_basket %}1{% else %}0{% endif %}"></span>
                         {% endfor %}
                     {% endfor %}
                 </div>

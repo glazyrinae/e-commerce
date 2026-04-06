@@ -1,7 +1,7 @@
 {% load sekizai_tags static %}
 
 <form id="{{ form_id }}" 
-      method=post
+      method="post"
       action="{% url 'search:search_result' %}"
       class="search-form" 
       data-content-type="{{ config.content_type.id }}"

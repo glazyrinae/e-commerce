@@ -2,20 +2,18 @@ import json
 import logging
 from decimal import Decimal
 
-from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.db.models import IntegerField, OuterRef, Subquery, Value
+from django.db.models.functions import Coalesce
+from django.http import HttpRequest, JsonResponse
+from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 
-from django.db.models import IntegerField, OuterRef, Subquery, Value
-from django.db.models.functions import Coalesce
 from basket.models import Basket
 from products.models import Colors, Products, Sizes, Store
 
 logger = logging.getLogger(__name__)
-
-
-from django.contrib.auth.decorators import login_required
-
 
 def _get_effective_price(product: Products) -> Decimal:
     if product.discount_price is not None:
@@ -34,89 +32,20 @@ def _get_cart_totals(user) -> tuple[int, Decimal]:
     return total_items, total_price
 
 
-@login_required(login_url="login")
-def basket(request):
-    if (
-        request.method == "POST"
-        and request.headers.get("x-requested-with") == "XMLHttpRequest"
-    ):
-        try:
-            payload = json.loads(request.body or "{}")
-        except json.JSONDecodeError:
-            return JsonResponse(
-                {"success": False, "error": "Некорректный JSON"},
-                status=400,
-            )
-
-        basket_id = payload.get("basket_id")
-        quantity = payload.get("quantity")
-
-        try:
-            basket_id = int(basket_id)
-            quantity = int(quantity)
-        except (TypeError, ValueError):
-            return JsonResponse(
-                {"success": False, "error": "basket_id и quantity должны быть числами"},
-                status=400,
-            )
-
-        item = (
-            Basket.objects.filter(id=basket_id, user=request.user)
-            .select_related("product")
-            .first()
+def _get_stock_count(*, product_id: int, color_id: int, size_id: int) -> int:
+    return (
+        Store.objects.filter(
+            product_id=product_id,
+            color_id=color_id,
+            size_id=size_id,
         )
-        if item is None:
-            return JsonResponse(
-                {"success": False, "error": "Позиция корзины не найдена"},
-                status=404,
-            )
+        .values_list("cnt", flat=True)
+        .first()
+        or 0
+    )
 
-        stock_cnt = (
-            Store.objects.filter(
-                product_id=item.product_id,
-                color_id=item.color_id,
-                size_id=item.size_id,
-            )
-            .values_list("cnt", flat=True)
-            .first()
-            or 0
-        )
 
-        removed = False
-        capped = False
-        line_total = Decimal("0")
-
-        if quantity <= 0 or stock_cnt <= 0:
-            item.delete()
-            quantity = 0
-            removed = True
-        else:
-            quantity_in_stock = min(quantity, stock_cnt)
-            capped = quantity_in_stock != quantity
-            quantity = quantity_in_stock
-            if item.quantity != quantity:
-                item.quantity = quantity
-                item.save(update_fields=["quantity", "updated_at"])
-            line_total = _get_effective_price(item.product) * quantity
-
-        cart_total_items, cart_total_price_items = _get_cart_totals(request.user)
-
-        response_data = {
-            "success": True,
-            "basket_id": basket_id,
-            "removed": removed,
-            "quantity": quantity,
-            "stock_cnt": stock_cnt,
-            "line_total": f"{line_total:.2f}",
-            "cart_total_items": cart_total_items,
-            "cart_total_price_items": f"{cart_total_price_items:.2f}",
-            "capped": capped,
-        }
-        if capped:
-            response_data["message"] = f"В наличии только {stock_cnt} шт."
-
-        return JsonResponse(response_data)
-
+def _build_cart_items(user) -> list[Basket]:
     stock_subquery = Store.objects.filter(
         product_id=OuterRef("product_id"),
         color_id=OuterRef("color_id"),
@@ -124,7 +53,7 @@ def basket(request):
     ).values("cnt")[:1]
 
     items = (
-        Basket.objects.filter(user=request.user)
+        Basket.objects.filter(user=user)
         .select_related("product", "product__category", "size", "color")
         .annotate(
             stock_cnt=Coalesce(
@@ -137,6 +66,95 @@ def basket(request):
     for item in items:
         item.unit_price = _get_effective_price(item.product)
         item.line_total = item.unit_price * item.quantity
+        # Явно прокидываем выбранный цвет/размер в контекст рендера корзины.
+        item.color_title = getattr(item.color, "title", "Не указан")
+        item.size_value = getattr(item.size, "size", "Не указан")
+    return items
+
+
+def _update_basket_item(request: HttpRequest) -> JsonResponse:
+    try:
+        payload = json.loads(request.body or "{}")
+    except json.JSONDecodeError:
+        return JsonResponse(
+            {"success": False, "error": "Некорректный JSON"},
+            status=400,
+        )
+
+    basket_id = payload.get("basket_id")
+    quantity = payload.get("quantity")
+
+    try:
+        basket_id = int(basket_id)
+        quantity = int(quantity)
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"success": False, "error": "basket_id и quantity должны быть числами"},
+            status=400,
+        )
+
+    item = (
+        Basket.objects.filter(id=basket_id, user=request.user)
+        .select_related("product")
+        .first()
+    )
+    if item is None:
+        return JsonResponse(
+            {"success": False, "error": "Позиция корзины не найдена"},
+            status=404,
+        )
+
+    stock_cnt = _get_stock_count(
+        product_id=item.product_id,
+        color_id=item.color_id,
+        size_id=item.size_id,
+    )
+
+    removed = False
+    capped = False
+    line_total = Decimal("0")
+
+    if quantity <= 0 or stock_cnt <= 0:
+        item.delete()
+        quantity = 0
+        removed = True
+    else:
+        quantity_in_stock = min(quantity, stock_cnt)
+        capped = quantity_in_stock != quantity
+        quantity = quantity_in_stock
+        if item.quantity != quantity:
+            item.quantity = quantity
+            item.save(update_fields=["quantity", "updated_at"])
+        line_total = _get_effective_price(item.product) * quantity
+
+    cart_total_items, cart_total_price_items = _get_cart_totals(request.user)
+
+    response_data = {
+        "success": True,
+        "basket_id": basket_id,
+        "removed": removed,
+        "quantity": quantity,
+        "stock_cnt": stock_cnt,
+        "line_total": f"{line_total:.2f}",
+        "cart_total_items": cart_total_items,
+        "cart_total_price_items": f"{cart_total_price_items:.2f}",
+        "capped": capped,
+    }
+    if capped:
+        response_data["message"] = f"В наличии только {stock_cnt} шт."
+
+    return JsonResponse(response_data)
+
+
+@login_required(login_url="login")
+def basket(request: HttpRequest) -> HttpResponse:
+    if (
+        request.method == "POST"
+        and request.headers.get("x-requested-with") == "XMLHttpRequest"
+    ):
+        return _update_basket_item(request)
+
+    items = _build_cart_items(request.user)
 
     cart_total_items, cart_total_price_items = _get_cart_totals(request.user)
 

@@ -3,6 +3,7 @@
 {% load filters %}
 
 {% block content %}
+<div class="container mb-5">
     {% comment %} {% load my_filters querystring_tags %} {% endcomment %}
 
     {% comment %} <section class="cta-section theme-bg-light py-5">
@@ -10,7 +11,6 @@
             <h2 class="heading">В данном блоге доступно {{ total_items|plural }} на разные темы</h2>
         </div>
     </section> {% endcomment %}
-
     <section class="blog-list px-3 py-5 p-md-5">
         <div class="container single-col-max-width">
             {% if search_config_missing %}
@@ -82,7 +82,7 @@
             {% comment %} {% include "base/_pagination.html" with page=items order_by=order_by %} {% endcomment %}
         </div>
     </section>
-
-    {% load search_tags %}
-    {% render_search_panel config_name="Поиск по полям" %}
+        {% load search_tags %}
+    {% render_search_panel %}
+</div>
 {% endblock %}

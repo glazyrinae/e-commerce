@@ -81,6 +81,15 @@ def render_search_panel(context, config_name=None, content_type=None):
         except (ValueError, ContentType.DoesNotExist):
             pass
 
+    # Fallback: если имя/тип не совпали, берём первую активную конфигурацию.
+    if not config:
+        config = (
+            SearchConfig.objects.filter(is_active=True)
+            .select_related("content_type")
+            .order_by("-id")
+            .first()
+        )
+
     if not config:
         return {"config": None}
 

@@ -1,28 +1,50 @@
 @import url('main.css');
 
 .date-range-group {
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 0.375rem;
-    padding: 15px;
+    background-color: transparent;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
     margin-bottom: 0;
 }
-.date-range-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
+
+.date-range-group .row {
+    --bs-gutter-x: 0.5rem;
 }
-.range-title {
-    font-weight: 600;
-    color: #495057;
+
+.date-range-group .form-label {
+    margin-bottom: 0.35rem;
+    font-size: 12px;
+    font-weight: 700;
+    color: #4b5563;
 }
-.remove-range {
-    cursor: pointer;
-    color: #dc3545;
-    font-size: 20px;
-    line-height: 1;
+
+.date-range-group .input-group .form-control {
+    border-right: 0;
+    border-radius: 0;
 }
+
+.date-range-group .input-group .input-group-text {
+    border-left: 0;
+    border-radius: 0;
+    min-width: 42px;
+    justify-content: center;
+}
+
 .datepicker {
-    z-index: 1060 !important;
+    z-index: 1070 !important;
+}
+
+.datepicker-dropdown {
+    border: 1px solid #d6deea;
+    border-radius: 10px;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+    padding: 0.3rem;
+}
+
+.datepicker table tr td.active.active,
+.datepicker table tr td.active.highlighted.active,
+.datepicker table tr td span.active.active {
+    background: var(--search-accent, #ce071e);
+    border-color: var(--search-accent, #ce071e);
 }

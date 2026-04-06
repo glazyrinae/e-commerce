@@ -1,5 +1,4 @@
-{% load static %}
-
+{% load static search_tags %}
 <section id="featured-products" class="product-store">
   <div class="container-md">
     <div class="display-header d-flex align-items-center justify-content-between">
@@ -9,6 +8,9 @@
       </div> {% endcomment %}
     </div>
     <div class="product-content padding-small">
+      {% if show_search_panel %}
+      {% render_search_panel %}
+      {% endif %}
       <div id="content-container" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5">
         {% for object in objects %}
         {% include 'modals/_product_card.html' with object=object %}

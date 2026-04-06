@@ -1,7 +1,7 @@
 {% extends 'base/base.html' %}
 {% load static %}
 {% block content %}
-    {% include 'base/_list_products.html' with objects=products  title="" %}
+    {% include 'base/_list_products.html' with objects=products title="" show_search_panel=True %}
     {% if products.has_next %}
     <div class="d-flex justify-content-center">
         <button id="load-more-btn" class="load-more-button btn btn-primary px-4" 

@@ -17,7 +17,7 @@
                 </div>
                 <div class="col-lg-9 col-md-8 col-sm-8">
                     <div class="product-header d-flex justify-content-between align-items-center mb-3">
-                    <h4 class="product-title fs-6 me-5">{{item.product.title}}</h4>
+                    <h4 class="product-title fs-6 me-5">{{ item.product.title }} Цвет {{ item.color_title }} Размер {{ item.size_value }}</h4>
                     <a href="#" class="remove js-remove-item" aria-label="Remove this item">
                         <svg class="close">
                         <use xlink:href="#close"></use>
@@ -66,8 +66,9 @@
             </div>
             <div class="modal-footer my-4 justify-content-center" id="js-cart-actions">
                 <button type="button" class="btn btn-red hvr-sweep-to-right dark-sweep">Заказать</button>
-                <button type="button"
-                class="btn btn-outline-gray hvr-sweep-to-right dark-sweep">Вернуться к покупкам</button>
+                <a href="{% url 'list_items' %}" class="btn btn-outline-gray hvr-sweep-to-right dark-sweep">
+                    Вернуться к покупкам
+                </a>
             </div>
         {% endif %}
         <div class="text-center mb-4" id="js-empty-cart" {% if cart %}style="display:none;"{% endif %}>

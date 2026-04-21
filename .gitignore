@@ -87,6 +87,7 @@ Thumbs.db
 *.tmp
 *.bak
 *.swp
+.codex
 
 deploy/db_data/
 deploy/db_backup/

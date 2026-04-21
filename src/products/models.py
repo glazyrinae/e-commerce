@@ -1,6 +1,9 @@
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils import timezone
+from comments.models import Comment
+
+from django.db.models import Avg
 
 
 class Categories(models.Model):
@@ -345,6 +348,15 @@ class Products(models.Model):
         help_text="Уникальный артикул товара (SKU)",
         db_comment="Уникальный артикул товара (SKU) для идентификации",
     )
+
+    @property
+    def get_cnt_comment(self) -> int:
+        return Comment.get_for_object(self).count()
+
+    @property
+    def get_rating(self) -> float:
+        avg_rating = Comment.get_for_object(self).aggregate(avg=Avg("rating"))["avg"]
+        return float(avg_rating or 0.0)
 
     @property
     def get_path_image_thumbnail(self) -> str:

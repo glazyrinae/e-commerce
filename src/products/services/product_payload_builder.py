@@ -110,7 +110,9 @@ class ProductPayloadBuilder:
 
     def build_many(self, products: list[Products] | Any) -> list[dict[str, Any]]:
         product_list = list(products)
-        product_ids = [int(product.pk) for product in product_list if product.pk is not None]
+        product_ids = [
+            int(product.pk) for product in product_list if product.pk is not None
+        ]
         self._prepare(product_ids)
 
         payloads: list[dict[str, Any]] = []

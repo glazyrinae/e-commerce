@@ -6,6 +6,11 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{% static 'products/css/detail.css' %}">
 {% endblock %}
+
+{% block js %}
+    {{ block.super }}
+    <script src="{% static 'products/js/detail.js' %}"></script>
+{% endblock %}
 {% block content %}
 <!-- Основной контент -->
 <div class="container mb-5">
@@ -35,7 +40,11 @@
                     <span class="text-muted text-decoration-line-through ms-2">{{ product.price | format_price }} ₽</span>
                     <span class="badge bg-danger ms-2">{% get_discount product.price product.discount_price %}</span>
                 </div>
-                <span class="text-success"><i class="bi bi-check-circle-fill"></i> В наличии</span>
+                {% if product_total_cnt > 0 %}
+                    <span class="text-success"><i class="bi bi-check-circle-fill"></i> В наличии</span>
+                {% else %}
+                    <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Нет в наличии</span>
+                {% endif %}
             </div>
             
             <div class="mb-4">

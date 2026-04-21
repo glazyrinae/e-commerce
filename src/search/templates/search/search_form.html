@@ -6,7 +6,8 @@
       class="search-form" 
       data-content-type="{{ config.content_type.id }}"
       data-config-id="{{ config.id }}"
-      data-results-limit="{{ config.results_limit }}">
+      data-results-limit="{{ config.results_limit }}"
+      data-category-slug="{{ request.resolver_match.kwargs.category_slug|default:'' }}">
      {% csrf_token %}
     {# Preserve current ordering across PRG (POST -> redirect -> GET). #}
     <input type="hidden" name="order_by" value="{{ request.GET.order_by|default:'' }}">
@@ -93,4 +94,5 @@
 
 {% addtoblock "js_footer" %}
     <script src="{% static 'js/search.js' %}"></script>
+    <script src="{% static 'js/search_results_loader.js' %}"></script>
 {% endaddtoblock %}

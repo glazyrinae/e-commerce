@@ -207,7 +207,7 @@
       }
       submitBtn.disabled = inBasket || !(color && size && maxQty > 0);
       submitBtn.textContent = inBasket
-        ? "Товар уже в корзине"
+        ? "В корзине"
         : (submitBtn.dataset.defaultText || "В корзину");
     }
   };
@@ -325,7 +325,7 @@
         return;
       }
       if (inBasket) {
-        showStockMsg(form, "Товар уже в корзине.");
+        showStockMsg(form, "В корзине.");
         return;
       }
       if (quantity > maxQty) {
@@ -364,7 +364,7 @@
           })
           : null;
         if (selectedVariant) selectedVariant.dataset.inBasket = "1";
-        if (submitBtn) submitBtn.textContent = data.button_text || "Товар уже в корзине";
+        if (submitBtn) submitBtn.textContent = data.button_text || "В корзине";
         setHeaderCartCount(data.cart_total_items);
         showStockMsg(form, data.message || "Товар добавлен в корзину.");
       } catch (e) {
@@ -379,6 +379,8 @@
   const initAll = () => {
     document.querySelectorAll("form[data-qv-form]").forEach(initForm);
   };
+
+  window.__quickViewInitAll = initAll;
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initAll, { once: true });

@@ -1,4 +1,3 @@
-# search/views.py
 from __future__ import annotations
 
 import json
@@ -10,12 +9,11 @@ from django.core.exceptions import FieldDoesNotExist
 from django.core.paginator import Paginator
 from django.db import models
 from django.db.models import Q
-from django.http import JsonResponse, QueryDict
-from django.shortcuts import redirect, render
-from django.urls import reverse
-from django.views import View
+from django.http import JsonResponse
+from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
 
+from products.services import ProductPayloadBuilder
 from .models import SearchConfig, SearchField
 
 
@@ -30,366 +28,377 @@ def _objects[ModelT: models.Model](model_class: type[ModelT]) -> models.Manager[
     return cast(models.Manager[ModelT], cast(Any, model_class).objects)
 
 
-def _getattr(obj: Any, name: str, default: Any = None) -> Any:
-    return getattr(obj, name, default)
+def _parse_positive_int(
+    value: Any,
+    default: int,
+    *,
+    minimum: int = 1,
+    maximum: int | None = None,
+) -> int:
+    try:
+        parsed = int(str(value))
+    except (TypeError, ValueError):
+        parsed = default
+
+    if parsed < minimum:
+        parsed = minimum
+    if maximum is not None and parsed > maximum:
+        parsed = maximum
+    return parsed
 
 
-class ListItems(View):
-    def _get_active_config(self) -> SearchConfig | None:
-        config = (
-            SearchConfig.objects.filter(is_active=True)
-            .select_related("content_type")
-            .order_by("-id")
-            .first()
-        )
-        return cast(SearchConfig | None, config)
+def _is_blank(value: Any) -> bool:
+    if value is None:
+        return True
+    if isinstance(value, str):
+        return value.strip() == ""
+    return False
 
-    def _find_first_field(
-        self, model_class: type[models.Model], candidates: list[str]
-    ) -> str | None:
-        for name in candidates:
-            try:
-                model_class._meta.get_field(name)
-            except FieldDoesNotExist:
-                continue
-            else:
-                return name
+
+def _scalar(value: Any) -> Any:
+    if isinstance(value, (list, tuple)):
+        if not value:
+            return None
+        return value[-1]
+    return value
+
+
+def _as_list(value: Any) -> list[Any]:
+    if isinstance(value, (list, tuple, set)):
+        return [v for v in value if not _is_blank(v)]
+    if _is_blank(value):
+        return []
+    return [value]
+
+
+def _extract_range_values(
+    search_data: Mapping[str, Any], field_name: str
+) -> tuple[Any, Any]:
+    raw_value = search_data.get(field_name)
+    if isinstance(raw_value, (list, tuple)):
+        min_value = raw_value[0] if len(raw_value) > 0 else None
+        max_value = raw_value[1] if len(raw_value) > 1 else None
+        return min_value, max_value
+
+    return search_data.get(f"{field_name}_min"), search_data.get(f"{field_name}_max")
+
+
+def _parse_date(value: Any):
+    if _is_blank(value):
         return None
 
-    def _get_ordering_options(
-        self, model_class: type[models.Model]
-    ) -> list[dict[str, str]]:
-        """
-        Build ordering options based on actual fields of the model resolved via content_type.
-        """
-        created_field = self._find_first_field(
-            model_class,
-            ["created", "created_at", "publish", "published_at", "date_created"],
-        )
-        title_field = self._find_first_field(model_class, ["title", "name"])
+    if isinstance(value, datetime):
+        return value.date()
 
-        options: list[dict[str, str]] = []
+    text = str(value).strip()
+    for fmt in ("%d.%m.%Y", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(text, fmt).date()
+        except ValueError:
+            continue
+    return None
 
-        if created_field:
-            options.extend(
-                [
-                    {"value": f"-{created_field}", "label": "Сначала новые"},
-                    {"value": f"{created_field}", "label": "Сначала старые"},
-                ]
-            )
 
-        if title_field:
-            options.extend(
-                [
-                    {"value": f"{title_field}", "label": "По названию (А–Я)"},
-                    {"value": f"-{title_field}", "label": "По названию (Я–А)"},
-                ]
-            )
+def _build_query_from_search_data(search_fields, search_data: Mapping[str, Any]):
+    query = Q()
+    applied_filters: dict[str, Any] = {}
 
-        if not options:
-            options = [
-                {"value": "-pk", "label": "Сначала новые (ID)"},
-                {"value": "pk", "label": "Сначала старые (ID)"},
+    for field in search_fields:
+        field_name = field.field_name
+        field_type = field.field_type
+        raw_value = search_data.get(field_name)
+
+        if field_type == "text":
+            text_value = _scalar(raw_value)
+            if _is_blank(text_value):
+                continue
+            text_value = str(text_value).strip()
+            query &= Q(**{f"{field_name}__icontains": text_value})
+            applied_filters[field_name] = text_value
+            continue
+
+        if field_type == "select":
+            values = _as_list(raw_value)
+            if not values:
+                continue
+            selected = values[-1]
+            query &= Q(**{field_name: selected})
+            applied_filters[field_name] = selected
+            continue
+
+        if field_type == "select_multiple":
+            values = _as_list(raw_value)
+            if not values:
+                continue
+            select_q = Q()
+            for value in values:
+                select_q |= Q(**{field_name: value})
+            query &= select_q
+            applied_filters[field_name] = values
+            continue
+
+        if field_type == "date_range":
+            min_raw, max_raw = _extract_range_values(search_data, field_name)
+            min_date = _parse_date(min_raw)
+            max_date = _parse_date(max_raw)
+            if min_date is None and max_date is None:
+                continue
+            if min_date is not None:
+                query &= Q(**{f"{field_name}__gte": min_date})
+            if max_date is not None:
+                query &= Q(**{f"{field_name}__lte": max_date})
+            applied_filters[field_name] = [
+                str(min_raw).strip() if not _is_blank(min_raw) else None,
+                str(max_raw).strip() if not _is_blank(max_raw) else None,
+            ]
+            continue
+
+        if field_type == "range":
+            min_raw, max_raw = _extract_range_values(search_data, field_name)
+            if _is_blank(min_raw) and _is_blank(max_raw):
+                continue
+            if not _is_blank(min_raw):
+                query &= Q(**{f"{field_name}__gte": min_raw})
+            if not _is_blank(max_raw):
+                query &= Q(**{f"{field_name}__lte": max_raw})
+            applied_filters[field_name] = [
+                min_raw if not _is_blank(min_raw) else None,
+                max_raw if not _is_blank(max_raw) else None,
             ]
 
-        return options
+    return query, applied_filters
 
-    def _get_default_ordering(self, ordering_options: list[dict[str, str]]) -> str:
-        return ordering_options[0]["value"]
 
-    def _get_ordering(self, request, ordering_options: list[dict[str, str]]) -> str:
-        """Определяет порядок сортировки из GET, валидируя по доступным опциям."""
-        default_value = self._get_default_ordering(ordering_options)
-        order_by = request.GET.get("order_by") or default_value
-        allowed = {opt["value"] for opt in ordering_options}
-        return order_by if order_by in allowed else default_value
-
-    def _get_filtered_queryset(self, request):
-        """Приватный метод: получает отфильтрованный queryset"""
-        search_data = request
-        filters: dict[str, Any] = {}
-        config = self._get_active_config()
-        if config is None:
-            return None, None, filters
-
-        # Получаем модель
-        model_class = _require_model_class(config.content_type)
-        # Строим запрос
-        query = Q()
-        search_fields = config.fields.filter(is_searchable=True)
-        # Дополнительные фильтры
-        for field in search_fields:
-            field_name = field.field_name
-            value = (
-                search_data.getlist(field_name)
-                if field.field_type == "select_multiple"
-                else search_data.get(field_name)
-            )
-            filters.update({field_name: value})
-            if not value and field.field_type not in ("date_range", "range"):
-                continue
-
-            if field.field_type == "text":
-                field_lookup = f"{field_name}__icontains"
-                query &= Q(**{field_lookup: value})
-
-            elif field.field_type == "select":
-                query &= Q(**{field_name: value})
-
-            elif field.field_type == "select_multiple":
-                if isinstance(value, list):
-                    # OR запрос через | для каждого значения
-                    select_q = Q()
-                    for val in value:
-                        select_q |= Q(**{field_name: val})
-                    query &= select_q
-
-            elif field.field_type == "date_range":
-                if date_min := search_data.get(f"{field_name}_min"):
-                    date_min_obj = datetime.strptime(date_min, "%d.%m.%Y").date()
-                    query &= Q(**{f"{field_name}__gte": date_min_obj})
-                    filters.update({f"{field_name}_min": date_min})
-                if date_max := search_data.get(f"{field_name}_max"):
-                    date_max_obj = datetime.strptime(date_max, "%d.%m.%Y").date()
-                    query &= Q(**{f"{field_name}__lte": date_max_obj})
-                    filters.update({f"{field_name}_max": date_max})
-
-            elif field.field_type == "range":
-                if rating_min := search_data.get(f"{field_name}_min"):
-                    filters.update({f"{field_name}_min": rating_min})
-                    query &= Q(**{f"{field_name}__gte": rating_min})
-                if rating_max := search_data.get(f"{field_name}_max"):
-                    filters.update({f"{field_name}_max": rating_max})
-                    query &= Q(**{f"{field_name}__lte": rating_max})
-
-        items = _objects(model_class).filter(query)
-        return config, items, filters
-
-    def _prepare_context(self, request, items, filters, ordering_options, order_by):
-        """Подготавливает контекст для шаблона"""
-        # Статистика
-        total_items = len(items)
-        order_by_label = next(
-            (opt["label"] for opt in ordering_options if opt["value"] == order_by),
-            order_by,
-        )
-
-        return {
-            "items": items,
-            "filters": filters,
-            "total_items": total_items,
-            "order_by": order_by,
-            "order_by_label": order_by_label,
-            "ordering_options": ordering_options,
-        }
-
-    def get(self, request, *args, **kwargs):
-        """Обработка GET запроса"""
-        # Используем свои методы
-        config, items, filters = self._get_filtered_queryset(request.GET)
-
-        if config is None or items is None:
-            return render(
-                request,
-                "search/search_result.html",
-                {
-                    "items": [],
-                    "filters": {},
-                    "total_items": 0,
-                    "order_by": "",
-                    "order_by_label": "Сортировка недоступна",
-                    "ordering_options": [],
-                    "search_config_missing": True,
-                },
-            )
-
-        model_class = cast(type[models.Model], items.model)
-        ordering_options = self._get_ordering_options(model_class)
-        order_by = self._get_ordering(request, ordering_options)
-
-        # Сортировка
-        items = items.order_by(order_by)
-
-        # Пагинация
-        page = request.GET.get("page", 1)
-        paginator = Paginator(items, 3)
-
+def _find_first_field(model_class: type[models.Model], candidates: list[str]) -> str | None:
+    for name in candidates:
         try:
-            items_page = paginator.page(page)
-        except:  # noqa: E722
-            items_page = paginator.page(1)
+            model_class._meta.get_field(name)
+        except FieldDoesNotExist:
+            continue
+        else:
+            return name
+    return None
 
-        # Подготавливаем контекст
-        context = self._prepare_context(
-            request, items_page, filters, ordering_options, order_by
+
+def _get_ordering_options(model_class: type[models.Model]) -> list[dict[str, str]]:
+    created_field = _find_first_field(
+        model_class,
+        ["created", "created_at", "publish", "published_at", "date_created"],
+    )
+    title_field = _find_first_field(model_class, ["title", "name"])
+    price_field = _find_first_field(
+        model_class,
+        ["price", "discount_price", "sale_price", "cost", "amount"],
+    )
+
+    options: list[dict[str, str]] = []
+
+    if created_field:
+        options.extend(
+            [
+                {"value": f"-{created_field}", "label": "Сначала новые"},
+                {"value": f"{created_field}", "label": "Сначала старые"},
+            ]
         )
-        context["items"] = items_page  # Обновляем items на пагинированные
-        context["order_by"] = order_by
-        # Обычный HTML вывод
-        return render(request, "search/search_result.html", context)
 
-    def post(self, request, *args, **kwargs):
-        """
-        PRG: POST -> Redirect -> GET.
+    if title_field:
+        options.extend(
+            [
+                {"value": f"{title_field}", "label": "По названию (А–Я)"},
+                {"value": f"-{title_field}", "label": "По названию (Я–А)"},
+            ]
+        )
 
-        Builds a querystring from submitted form values and redirects to the same
-        page so sorting/pagination work via URL without resubmitting POST.
-        """
-        q = QueryDict(mutable=True)
+    if price_field:
+        options.extend(
+            [
+                {"value": f"{price_field}", "label": "По цене (сначала дешевле)"},
+                {"value": f"-{price_field}", "label": "По цене (сначала дороже)"},
+            ]
+        )
 
-        for key, values in request.POST.lists():
-            if key == "csrfmiddlewaretoken":
-                continue
-            cleaned = [v for v in values if v is not None and str(v).strip() != ""]
-            if not cleaned:
-                continue
-            q.setlist(key, cleaned)
+    if not options:
+        return [
+            {"value": "-pk", "label": "Сначала новые (ID)"},
+            {"value": "pk", "label": "Сначала старые (ID)"},
+        ]
 
-        # Always reset pagination when filters change.
-        q.pop("page", None)
+    return options
 
-        base_url = reverse("search:search_result")
-        query = q.urlencode()
-        if query:
-            return redirect(f"{base_url}?{query}")
-        return redirect(base_url)
+
+def _get_default_ordering(ordering_options: list[dict[str, str]]) -> str:
+    return ordering_options[0]["value"]
+
+
+def _render_cards_html(objects, request) -> str:
+    html_chunks: list[str] = []
+    for payload in objects:
+        if _is_blank(payload.get("slug")):
+            continue
+        html_chunks.append(
+            render_to_string(
+                "modals/_product_card.html", {"object": payload}, request=request
+            )
+        )
+
+    return "".join(html_chunks)
+
+
+def _render_quick_view_html(objects, request) -> str:
+    valid_objects = [payload for payload in objects if not _is_blank(payload.get("slug"))]
+    return render_to_string("modals/_quick_view.html", {"objects": valid_objects}, request=request)
 
 
 @require_POST
 def api_search(request):
-    """API endpoint для поиска"""
+    """API endpoint для поиска товаров с HTML-блоками карточек и quick view."""
 
     try:
         data = cast(Mapping[str, Any], json.loads(request.body))
-        config_id = data.get("config_id")
-        content_type_id = data.get("content_type_id")
-        search_data = cast(Mapping[str, Any], data.get("search_data", {}))
-        limit = data.get("limit", 10)
-        limit = int(limit)
-
-        # Получаем конфигурацию
-        config = SearchConfig.objects.get(
-            id=config_id, content_type_id=content_type_id, is_active=True
+    except json.JSONDecodeError:
+        return JsonResponse(
+            {"success": False, "message": "Некорректный JSON"}, status=400
         )
 
-        # Получаем модель
-        model_class = _require_model_class(config.content_type)
+    try:
+        config_id = _parse_positive_int(data.get("config_id"), 0, minimum=0)
+        content_type_id = _parse_positive_int(data.get("content_type_id"), 0, minimum=0)
+        if config_id <= 0 or content_type_id <= 0:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "config_id и content_type_id обязательны",
+                },
+                status=400,
+            )
 
-        # Строим запрос
-        query = Q()
+        raw_search_data = data.get("search_data", {})
+        search_data = (
+            cast(Mapping[str, Any], raw_search_data)
+            if isinstance(raw_search_data, Mapping)
+            else {}
+        )
+        category_slug = (
+            str(data.get("category_slug")).strip()
+            if isinstance(data.get("category_slug"), str)
+            else ""
+        )
+
+        config = SearchConfig.objects.get(
+            id=config_id,
+            content_type_id=content_type_id,
+            is_active=True,
+        )
+
+        model_class = _require_model_class(config.content_type)
         search_fields = config.fields.filter(is_searchable=True)
 
-        # Дополнительные фильтры
-        for field in search_fields:
-            field_name = field.field_name
-            value = search_data.get(field_name)
-
-            if not value and field.field_type != "date_range":
-                continue
-
-            if field.field_type == "text":
-                field_lookup = f"{field_name}__icontains"
-                query &= Q(**{field_lookup: value})
-
-            # elif field.field_type == "checkbox":
-            #     if value == "on" or value is True:
-            #         query &= Q(**{field_name: True})
-            #     elif value == "off" or value is False:
-            #         query &= Q(**{field_name: False})
-
-            elif field.field_type in ("select_multiple", "select"):
-                if isinstance(value, list):
-                    # OR запрос через | для каждого значения
-                    select_q = Q()
-                    for val in value:
-                        select_q |= Q(**{field_name: val})
-                    query &= select_q
-
-            # elif field.field_type == "radio":
-            #     query &= Q(**{field_name: value})
-
-            # elif field.field_type == "number":
-            #     query &= Q(**{field_name: value})
-
-            elif field.field_type == "date_range":
-                if date_min := search_data.get(f"{field_name}_min"):
-                    date_min = datetime.strptime(date_min, "%d.%m.%Y").date()
-                    query &= Q(**{f"{field_name}__gte": date_min})
-                if date_max := search_data.get(f"{field_name}_max"):
-                    date_max = datetime.strptime(date_max, "%d.%m.%Y").date()
-                    query &= Q(**{f"{field_name}__lte": date_max})
-
-            elif field.field_type == "range":
-                if (
-                    isinstance(value, (list, tuple))
-                    and len(value) >= 2
-                    and (value[0] or value[1])
-                ):
-                    if value[0]:
-                        query &= Q(**{f"{field_name}__gte": value[0]})
-                    if value[1]:
-                        query &= Q(**{f"{field_name}__lte": value[1]})
-
-        # Выполняем поиск
+        query, applied_filters = _build_query_from_search_data(search_fields, search_data)
         qs = _objects(model_class).filter(query)
-        _q = qs.query
-        total = qs.count()
-        results = list(qs[:limit])
 
-        # Формируем ответ
-        formatted_results = []
-        for obj in results:
-            get_absolute_url_name = "get_absolute_url"
-            get_absolute_url = _getattr(obj, get_absolute_url_name)
-            formatted_results.append(
-                {
-                    "id": getattr(obj, "id", obj.pk),
-                    "content_type": f"{obj._meta.app_label}.{obj._meta.model_name}",
-                    "title": str(obj),
-                    "description": (
-                        getattr(obj, "description", "")[:100]
-                        if hasattr(obj, "description")
-                        else ""
-                    ),
-                    "url": (get_absolute_url() if callable(get_absolute_url) else None),
-                }
-            )
+        if category_slug:
+            try:
+                category_field = model_class._meta.get_field("category")
+            except FieldDoesNotExist:
+                pass
+            else:
+                related_model = cast(
+                    type[models.Model] | None,
+                    getattr(category_field, "related_model", None),
+                )
+                if related_model is not None:
+                    try:
+                        related_model._meta.get_field("slug")
+                    except FieldDoesNotExist:
+                        pass
+                    else:
+                        qs = qs.filter(category__slug=category_slug)
+                        applied_filters["category_slug"] = category_slug
+
+        try:
+            model_class._meta.get_field("category")
+        except FieldDoesNotExist:
+            pass
+        else:
+            qs = qs.select_related("category")
+
+        ordering_options = _get_ordering_options(model_class)
+        allowed_ordering = {option["value"] for option in ordering_options}
+        default_ordering = _get_default_ordering(ordering_options)
+
+        raw_order_by = data.get("order_by")
+        order_by = (
+            raw_order_by
+            if isinstance(raw_order_by, str) and raw_order_by in allowed_ordering
+            else default_ordering
+        )
+        qs = qs.order_by(order_by)
+
+        default_per_page = _parse_positive_int(
+            data.get("limit"),
+            int(config.results_limit),
+            minimum=1,
+            maximum=100,
+        )
+        per_page = _parse_positive_int(
+            data.get("per_page"),
+            default_per_page,
+            minimum=1,
+            maximum=100,
+        )
+        page_number = _parse_positive_int(data.get("page"), 1, minimum=1)
+
+        paginator = Paginator(qs, per_page)
+        page_obj = paginator.get_page(page_number)
+        product_payloads = ProductPayloadBuilder(request).build_many(
+            list(page_obj.object_list)
+        )
+        cards_html = _render_cards_html(product_payloads, request=request)
+        quick_view_html = _render_quick_view_html(product_payloads, request=request)
 
         return JsonResponse(
             {
                 "success": True,
-                "query": str(_q),
-                "results": formatted_results,
-                "total": total,
-                "has_more": total > limit,
-                "show_count": config.show_results_count,
-                "search_id": f"{config_id}_{content_type_id}",
+                "meta": {
+                    "total": paginator.count,
+                    "page": page_obj.number,
+                    "per_page": per_page,
+                    "has_next": page_obj.has_next(),
+                    "has_prev": page_obj.has_previous(),
+                },
+                "ordering": {
+                    "current": order_by,
+                    "options": ordering_options,
+                },
+                "filters": applied_filters,
+                "blocks": {
+                    "cards_html": cards_html,
+                    "quick_view_html": quick_view_html,
+                },
             }
         )
 
     except SearchConfig.DoesNotExist:
         return JsonResponse(
-            {"success": False, "message": "Конфигурация поиска не найдена"}, status=404
+            {"success": False, "message": "Конфигурация поиска не найдена"},
+            status=404,
         )
-
     except Exception as e:
         return JsonResponse({"success": False, "message": str(e)}, status=500)
 
 
 def get_field_choices(request, config_id, field_id):
-    """Получение вариантов выбора для поля из модели"""
+    """Получение вариантов выбора для поля поиска."""
     try:
         field = SearchField.objects.get(id=field_id, config_id=config_id)
         model_class = _require_model_class(field.config.content_type)
 
-        choices = []
+        choices: list[dict[str, Any]] = []
 
-        # Получаем поле модели
         try:
             model_field = model_class._meta.get_field(field.field_name)
 
-            choices_name = "choices"
-            raw_choices = _getattr(model_field, choices_name)
+            raw_choices = getattr(model_field, "choices", None)
             if callable(raw_choices):
                 raw_choices = raw_choices()
 
@@ -398,41 +407,26 @@ def get_field_choices(request, config_id, field_id):
                     {"value": choice[0], "label": choice[1]}
                     for choice in cast(Any, raw_choices)
                 ]
-            # Если поле BooleanField
-            # Если поле ForeignKey
-            elif _getattr(model_field, "related_model", None) is not None:
-                related_model_name = "related_model"
+            elif getattr(model_field, "related_model", None) is not None:
                 related_model = cast(
-                    type[models.Model] | None, _getattr(model_field, related_model_name)
+                    type[models.Model] | None, getattr(model_field, "related_model")
                 )
-                if related_model is None:
-                    raise ValueError("Field.related_model is None")
-                # Берем все объекты или ограниченное количество
-                objects = _objects(related_model).all()[:100]
-                choices = [
-                    {"value": getattr(obj, "id", obj.pk), "label": str(obj)}
-                    for obj in objects
-                ]
-
-            # Если поле с choices (TextChoices или Choices)
-            elif raw_choices:
-                choices = [
-                    {"value": choice[0], "label": choice[1]}
-                    for choice in cast(Any, raw_choices)
-                ]
-
-            # Если поле BooleanField
+                if related_model is not None:
+                    objects = _objects(related_model).all()[:100]
+                    choices = [
+                        {"value": getattr(obj, "id", obj.pk), "label": str(obj)}
+                        for obj in objects
+                    ]
             elif model_field.get_internal_type() == "BooleanField":
                 choices = [
                     {"value": "true", "label": "Да"},
                     {"value": "false", "label": "Нет"},
                 ]
 
-            # Если в модели есть метод get_xxx_choices
-            choices_method_name = f"get_{field.field_name}_choices"
-            if hasattr(model_class, choices_method_name):
-                choices_method = getattr(model_class, choices_method_name)
-                custom_choices = choices_method()
+            method_name = f"get_{field.field_name}_choices"
+            if hasattr(model_class, method_name):
+                method = getattr(model_class, method_name)
+                custom_choices = method()
                 if isinstance(custom_choices, (list, tuple)):
                     choices = [
                         {"value": choice[0], "label": choice[1]}
@@ -440,10 +434,10 @@ def get_field_choices(request, config_id, field_id):
                     ]
 
         except Exception:
-            # Если не удалось получить из модели, используем сохраненные choices
-            choices_dict = field.get_choices_dict()
+            fallback_choices = field.get_choices_dict()
             choices = [
-                {"value": key, "label": label} for key, label in choices_dict.items()
+                {"value": key, "label": label}
+                for key, label in fallback_choices.items()
             ]
 
         return JsonResponse(
@@ -455,5 +449,10 @@ def get_field_choices(request, config_id, field_id):
             }
         )
 
+    except SearchField.DoesNotExist:
+        return JsonResponse(
+            {"success": False, "message": "Поле поиска не найдено"},
+            status=404,
+        )
     except Exception as e:
         return JsonResponse({"success": False, "message": str(e)}, status=500)

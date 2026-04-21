@@ -2,7 +2,7 @@
 class UniversalSearch {
     constructor(formElement) {
         this.form = formElement;
-        this.resultsContainer = document.querySelector(`#results-${this.form.id}`);
+        this.resultsContainer = document.querySelector(`#content-container`);
         this.resultsList = this.resultsContainer
             ? this.resultsContainer.querySelector('.search-results-list')
             : null;
@@ -11,7 +11,7 @@ class UniversalSearch {
             : null;
         this.configId = this.form.dataset.configId;
         this.contentTypeId = this.form.dataset.contentType;
-        this.resultsLimit = this.form.dataset.resultsLimit || 10;
+        this.resultsLimit = this.form.dataset.resultsLimit || 5;
         this.init();
     }
     
@@ -41,39 +41,39 @@ class UniversalSearch {
     }
     
     populateFieldChoices(fieldElement, choices, fieldType) {
-if (fieldType === 'select') {
-    const select = fieldElement;
-    if (select) {
-        // Получаем выбранные значения из data-selected
-        const selectedValues = select.dataset.selected 
-            ? select.dataset.selected.split(',').map(v => v.trim()) 
-            : [];
-        
-        // Очищаем существующие опции кроме первой
-        while (select.options.length > 1) {
-            select.remove(1);
-        }
-        
-        // Добавляем новые опции
-        choices.forEach(choice => {
-            const option = document.createElement('option');
-            option.value = choice.value;
-            option.textContent = choice.label;
-            
-            // Устанавливаем selected для всех подходящих значений
-            if (selectedValues.includes(String(choice.value))) {
-                option.selected = true;
+        if (fieldType === 'select') {
+            const select = fieldElement;
+            if (select) {
+                // Получаем выбранные значения из data-selected
+                const selectedValues = select.dataset.selected 
+                    ? select.dataset.selected.split(',').map(v => v.trim()) 
+                    : [];
+                
+                // Очищаем существующие опции кроме первой
+                while (select.options.length > 1) {
+                    select.remove(1);
+                }
+                
+                // Добавляем новые опции
+                choices.forEach(choice => {
+                    const option = document.createElement('option');
+                    option.value = choice.value;
+                    option.textContent = choice.label;
+                    
+                    // Устанавливаем selected для всех подходящих значений
+                    if (selectedValues.includes(String(choice.value))) {
+                        option.selected = true;
+                    }
+                    
+                    select.appendChild(option);
+                });
+                
+                // ЕСЛИ ИСПОЛЬЗУЕТСЯ SELECT2 - ОБНОВЛЯЕМ
+                if (typeof $ !== 'undefined' && $(select).data('select2')) {
+                    $(select).trigger('change');  // Просто триггерим change для обновления
+                }
             }
-            
-            select.appendChild(option);
-        });
-        
-        // ЕСЛИ ИСПОЛЬЗУЕТСЯ SELECT2 - ОБНОВЛЯЕМ
-        if (typeof $ !== 'undefined' && $(select).data('select2')) {
-            $(select).trigger('change');  // Просто триггерим change для обновления
-        }
-    }
-} else if (fieldType === 'radio') {
+        } else if (fieldType === 'radio') {
             const container = fieldElement;
             // Очищаем существующие радиокнопки
             container.innerHTML = `<label class="form-label">${fieldElement.dataset.label || 'Выберите'}</label>`;
@@ -84,10 +84,10 @@ if (fieldType === 'select') {
                 const radioHtml = `
                     <div class="form-check">
                         <input class="form-check-input" 
-                               type="radio" 
-                               name="${fieldElement.dataset.fieldName}"
-                               value="${choice.value}"
-                               id="${radioId}">
+                            type="radio" 
+                            name="${fieldElement.dataset.fieldName}"
+                            value="${choice.value}"
+                            id="${radioId}">
                         <label class="form-check-label" for="${radioId}">
                             ${choice.label}
                         </label>
@@ -100,10 +100,17 @@ if (fieldType === 'select') {
 
     init() {
         // Перед submit нормализуем значения range: если стоят дефолты, не отправляем их.
-        this.form.addEventListener('submit', () => {
+        // Если есть блок результатов, перехватываем submit и выполняем AJAX-поиск.
+        // Иначе оставляем стандартный submit (PRG на сервере).
+        this.form.addEventListener('submit', (e) => {
             this.normalizeRangeForSubmit();
+
+            if (this.resultsContainer) {
+                e.preventDefault();
+                this.performSearch();
+            }
+
         });
-        
         // Событие очистки
         const clearBtn = this.form.querySelector('.search-clear');
         if (clearBtn) {
@@ -111,20 +118,20 @@ if (fieldType === 'select') {
         }
         
         // Автопоиск при вводе
-        const searchInput = this.form.querySelector('.search-input');
-        if (searchInput) {
-            let timeout;
-            searchInput.addEventListener('input', (e) => {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => {
-                    if (e.target.value.length >= 2) {
-                        this.performSearch();
-                    } else {
-                        this.hideResults();
-                    }
-                }, 500);
-            });
-        }
+        // const searchInput = this.form.querySelector('.search-input');
+        // if (searchInput) {
+        //     let timeout;
+        //     searchInput.addEventListener('input', (e) => {
+        //         clearTimeout(timeout);
+        //         timeout = setTimeout(() => {
+        //             if (e.target.value.length >= 2) {
+        //                 this.performSearch();
+        //             } else {
+        //                 this.hideResults();
+        //             }
+        //         }, 500);
+        //     });
+        // }
         
         // Загружаем динамические choices для полей
         const dynamicFields = this.form.querySelectorAll('[data-field-type="select"], [data-field-type="radio"]');

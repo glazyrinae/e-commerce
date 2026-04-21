@@ -1,89 +1,108 @@
 {% extends "base/base.html" %}
 {% block title %}Create an account{% endblock %}
 {% block content %}
-<h1>Create an account</h1>
-<p>Please, sign up using the following form:</p>
-<form method="post" action="{% url 'register' %}">
-    <div class="container">
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-5">
+            <h1 class="text-center mb-3">Create an account</h1>
+            <p class="text-center mb-4">Please, sign up using the following form:</p>
+            <form method="post" action="{% url 'register' %}">
+                {% csrf_token %}
 
-        <div class="row mb-3">
-            <label for="{{user_form.username.name}}" class="col-sm-2 col-form-label">{{ user_form.username.label }}</label>
-            <div class="col-sm-5">
-                <input 
-                    type="text" 
-                    class="form-control" 
-                    id="{{user_form.username.name}}" 
-                    name="{{user_form.username.name}}" 
-                    value="{{user_form.username.value |default_if_none:''}}"/>
-            </div>
-            {% if user_form.username.errors %}
-                {{ user_form.username.errors }}
-            {% endif %}
-        </div>
+                <div class="mb-3">
+                    <label for="id_username" class="form-label">{{ user_form.username.label }}</label>
+                    <input
+                        type="text"
+                        class="form-control{% if user_form.username.errors %} is-invalid{% endif %}"
+                        id="id_username"
+                        name="{{ user_form.username.name }}"
+                        value="{{ user_form.username.value|default_if_none:'' }}"
+                        required
+                    >
+                    {% if user_form.username.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ user_form.username.errors|striptags }}
+                        </div>
+                    {% endif %}
+                </div>
 
-        <div class="row mb-3">
-            <label for="{{user_form.first_name.name}}" class="col-sm-2 col-form-label">{{ user_form.first_name.label }}</label>
-            <div class="col-sm-5">
-                <input 
-                    type="text" 
-                    class="form-control" 
-                    id="{{user_form.first_name.name}}"  
-                    name="{{user_form.first_name.name}}"
-                    value="{{user_form.first_name.value|default_if_none:''}}" />
-            </div>
-            {% if user_form.first_name.errors %}
-                {{ user_form.first_name.errors }}
-            {% endif %}
-        </div>
-        
-        <div class="row mb-3">
-            <label for="{{user_form.email.name}}" class="col-sm-2 col-form-label">{{ user_form.email.label }}</label>
-            <div class="col-sm-5">
-                <input 
-                    type="email" 
-                    class="form-control" 
-                    id="{{user_form.email.name}}"  
-                    name="{{user_form.email.name}}"
-                    value="{{user_form.email.value|default_if_none:''}}" />
-            </div>
-            {% if user_form.email.errors %}
-                {{ user_form.email.errors }}
-            {% endif %}
-        </div>
+                <div class="mb-3">
+                    <label for="id_first_name" class="form-label">{{ user_form.first_name.label }}</label>
+                    <input
+                        type="text"
+                        class="form-control{% if user_form.first_name.errors %} is-invalid{% endif %}"
+                        id="id_first_name"
+                        name="{{ user_form.first_name.name }}"
+                        value="{{ user_form.first_name.value|default_if_none:'' }}"
+                    >
+                    {% if user_form.first_name.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ user_form.first_name.errors|striptags }}
+                        </div>
+                    {% endif %}
+                </div>
 
-        <div class="row mb-3">
-            <label for="{{user_form.password.name}}" class="col-sm-2 col-form-label">{{ user_form.password.label }}</label>
-            <div class="col-sm-5">
-                <input 
-                    type="password" 
-                    class="form-control" 
-                    id="{{user_form.password.name}}"  
-                    name="{{user_form.password.name}}"
-                    value="{{user_form.password.value|default_if_none:''}}" />
-            </div>
-            {% if user_form.password.errors %}
-                {{ user_form.password.errors }}
-            {% endif %}
-        </div>
-        
-        <div class="row mb-3">
-            <label for="{{user_form.password2.name}}" class="col-sm-2 col-form-label">{{ user_form.password2.label }}</label>
-            <div class="col-sm-5">
-                <input 
-                    type="password" 
-                    class="form-control" 
-                    id="{{user_form.password2.name}}" 
-                    name="{{user_form.password2.name}}"
-                    name="{{user_form.password2.value|default_if_none:''}}" />
-            </div>
-            {% if user_form.password2.errors %}
-                {{ user_form.password2.errors }}
-            {% endif %}
-        </div>
+                <div class="mb-3">
+                    <label for="id_email" class="form-label">{{ user_form.email.label }}</label>
+                    <input
+                        type="email"
+                        class="form-control{% if user_form.email.errors %} is-invalid{% endif %}"
+                        id="id_email"
+                        name="{{ user_form.email.name }}"
+                        value="{{ user_form.email.value|default_if_none:'' }}"
+                        required
+                    >
+                    {% if user_form.email.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ user_form.email.errors|striptags }}
+                        </div>
+                    {% endif %}
+                </div>
 
-        <p><input type="submit" class="btn btn-primary px-4" value="Create my account"></p>
+                <div class="mb-3">
+                    <label for="id_password" class="form-label">{{ user_form.password.label }}</label>
+                    <input
+                        type="password"
+                        class="form-control{% if user_form.password.errors %} is-invalid{% endif %}"
+                        id="id_password"
+                        name="{{ user_form.password.name }}"
+                        required
+                    >
+                    {% if user_form.password.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ user_form.password.errors|striptags }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_password2" class="form-label">{{ user_form.password2.label }}</label>
+                    <input
+                        type="password"
+                        class="form-control{% if user_form.password2.errors %} is-invalid{% endif %}"
+                        id="id_password2"
+                        name="{{ user_form.password2.name }}"
+                        required
+                    >
+                    {% if user_form.password2.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ user_form.password2.errors|striptags }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                {% if user_form.non_field_errors %}
+                    <div class="invalid-feedback d-block mb-3 text-center">
+                        {{ user_form.non_field_errors|striptags }}
+                    </div>
+                {% endif %}
+
+                <div class="d-flex justify-content-center">
+                    <input type="submit" class="btn btn-primary px-4" value="Create my account">
+                </div>
+            </form>
+        </div>
     </div>
-    {% csrf_token %}
-</form>
+</div>
 
 {% endblock %}

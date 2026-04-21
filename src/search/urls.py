@@ -6,7 +6,7 @@ from . import views
 app_name = "search"
 
 urlpatterns = [
-    path("", views.ListItems.as_view(), name="search_result"),
+    path("", views.api_search, name="search_result"),
     path("api/search/", views.api_search, name="api_search"),
     path(
         "api/field-choices/<int:config_id>/<int:field_id>/",

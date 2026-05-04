@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 from django import template
 from django.conf import settings
@@ -22,7 +22,7 @@ def _resolve_search_config(
     qs = SearchConfig.objects.filter(is_active=True).select_related("content_type")
 
     if config_name:
-        config = qs.filter(name=config_name).first()
+        config = cast(SearchConfig | None, qs.filter(name=config_name).first())
         if config:
             return config
 
@@ -38,12 +38,12 @@ def _resolve_search_config(
             ct = content_type_input
 
         if ct:
-            config = qs.filter(content_type=ct).first()
+            config = cast(SearchConfig | None, qs.filter(content_type=ct).first())
             if config:
                 return config
 
     # Fallback: самая свежая активная конфигурация
-    return qs.order_by("-id").first()
+    return cast(SearchConfig | None, qs.order_by("-id").first())
 
 
 @register.filter

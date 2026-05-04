@@ -2,13 +2,13 @@ import json
 import logging
 
 from django.http import HttpRequest, JsonResponse
-from django.views.decorators.http import require_POST, require_GET
+from django.views.decorators.http import require_GET, require_POST
 
 from .exceptions import InvalidSearchRequestError, SearchConfigNotFoundError
-from .forms import SearchRequestForm
-from .services import SearchService
 from .field_choices import FieldChoices
+from .forms import SearchRequestForm
 from .models import SearchField  # для отлова DoesNotExist
+from .services import SearchService
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +76,7 @@ def get_field_choices(
         return JsonResponse(
             {"success": False, "message": "Поле поиска не найдено"}, status=404
         )
-    except (ValueError, Exception) as e:
+    except (ValueError, Exception):
         # В продакшене лучше ловить ValueError и Exception раздельно
         logger.exception("get_field_choices failed")
         return JsonResponse(

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 from django.core.exceptions import FieldDoesNotExist
 from django.db import models
@@ -29,20 +29,34 @@ class FieldChoices:
         if not self._model_class:
             raise ValueError("Не удалось определить модель из content_type")
 
+    def _require_field(self) -> SearchField:
+        self._load_field_and_model()
+        if self._field is None:
+            raise ValueError("SearchField не загружен")
+        return self._field
+
+    def _require_model_class(self) -> type[models.Model]:
+        self._load_field_and_model()
+        if self._model_class is None:
+            raise ValueError("Модель не определена")
+        return cast(type[models.Model], self._model_class)
+
     def _resolve_field(self) -> models.Field:
         """Находит поле модели, поддерживает синтаксис `related__field`."""
-        self._load_field_and_model()
-        lookup = self._field.field_name
+        field = self._require_field()
+        model_class = self._require_model_class()
+        lookup = field.field_name
         if "__" not in lookup:
-            return self._model_class._meta.get_field(lookup)
+            return model_class._meta.get_field(lookup)
 
         parts = [p for p in lookup.split("__") if p]
-        current = self._model_class
+        current: type[models.Model] = model_class
         for part in parts[:-1]:
             rel = current._meta.get_field(part)
-            current = getattr(rel, "related_model", None)
-            if not current:
+            related_model = getattr(rel, "related_model", None)
+            if related_model is None:
                 raise FieldDoesNotExist(lookup)
+            current = cast(type[models.Model], related_model)
         return current._meta.get_field(parts[-1])
 
     def _get_django_choices(
@@ -73,22 +87,24 @@ class FieldChoices:
         return None
 
     def _get_custom_choices(self) -> list[dict[str, Any]] | None:
-        self._load_field_and_model()
-        method_name = f"get_{self._field.field_name}_choices"
-        if hasattr(self._model_class, method_name):
-            result = getattr(self._model_class, method_name)()
+        field = self._require_field()
+        model_class = self._require_model_class()
+        method_name = f"get_{field.field_name}_choices"
+        if hasattr(model_class, method_name):
+            result = getattr(model_class, method_name)()
             if isinstance(result, (list, tuple)):
                 return [{"value": c[0], "label": c[1]} for c in result]
         return None
 
     def _get_fallback_choices(self) -> list[dict[str, Any]]:
-        self._load_field_and_model()
-        fallback = self._field.get_choices_dict()
+        field = self._require_field()
+        fallback = field.get_choices_dict()
         return [{"value": k, "label": v} for k, v in fallback.items()]
 
     def get_choices(self) -> dict[str, Any]:
         """Основной метод: возвращает структурированные варианты выбора."""
-        self._load_field_and_model()
+        field = self._require_field()
+        model_class = self._require_model_class()
         model_field = self._resolve_field()
 
         choices = (
@@ -101,6 +117,6 @@ class FieldChoices:
 
         return {
             "choices": choices,
-            "model": str(self._model_class),
-            "field_type": self._field.field_type,
+            "model": str(model_class),
+            "field_type": field.field_type,
         }

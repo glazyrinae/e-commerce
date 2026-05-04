@@ -33,9 +33,7 @@ DEFAULT_PLURAL_VARIANTS = ["отзыв", "отзыва", "отзывов"]
 
 
 @register.filter(name="plural")
-def choose_plural(
-    amount: int, variants: list[str] | None = None
-) -> str:
+def choose_plural(amount: int, variants: list[str] | None = None) -> str:
     variants = variants or DEFAULT_PLURAL_VARIANTS
     if isinstance(variants, list) and len(variants) == 3:
         if amount % 10 == 1 and amount % 100 != 11:

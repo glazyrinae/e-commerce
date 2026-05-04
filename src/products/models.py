@@ -1,9 +1,9 @@
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.utils import timezone
-from comments.models import Comment
-
 from django.db.models import Avg
+from django.utils import timezone
+
+from comments.models import Comment
 
 
 class Categories(models.Model):
@@ -351,7 +351,7 @@ class Products(models.Model):
 
     @property
     def get_cnt_comment(self) -> int:
-        return Comment.get_for_object(self).count()
+        return int(Comment.get_for_object(self).count())
 
     @property
     def get_rating(self) -> float:

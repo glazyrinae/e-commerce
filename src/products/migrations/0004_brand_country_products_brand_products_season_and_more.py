@@ -5,51 +5,116 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('products', '0003_products_params'),
+        ("products", "0003_products_params"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Brand',
+            name="Brand",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(default='', max_length=250, unique=True)),
-                ('code', models.CharField(default='', max_length=25, unique=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("title", models.CharField(default="", max_length=250, unique=True)),
+                ("code", models.CharField(default="", max_length=25, unique=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Country',
+            name="Country",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(default='', max_length=250, unique=True)),
-                ('code', models.CharField(default='', max_length=25, unique=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("title", models.CharField(default="", max_length=250, unique=True)),
+                ("code", models.CharField(default="", max_length=25, unique=True)),
             ],
         ),
         migrations.AddField(
-            model_name='products',
-            name='brand',
-            field=models.CharField(choices=[('male', 'мужские'), ('female', 'женские'), ('unisex', 'универсальные'), ('kids', 'детские')], default='nike', max_length=30, verbose_name='Брэнд'),
+            model_name="products",
+            name="brand",
+            field=models.CharField(
+                choices=[
+                    ("male", "мужские"),
+                    ("female", "женские"),
+                    ("unisex", "универсальные"),
+                    ("kids", "детские"),
+                ],
+                default="nike",
+                max_length=30,
+                verbose_name="Брэнд",
+            ),
         ),
         migrations.AddField(
-            model_name='products',
-            name='season',
-            field=models.CharField(choices=[('winter', 'зима'), ('summer', 'лето'), ('autumn', 'осень'), ('spring', 'весна'), ('spring-summer', 'весна-лето'), ('autumn-winter', 'осень-зима')], default='summer', max_length=16, verbose_name='Сезон'),
+            model_name="products",
+            name="season",
+            field=models.CharField(
+                choices=[
+                    ("winter", "зима"),
+                    ("summer", "лето"),
+                    ("autumn", "осень"),
+                    ("spring", "весна"),
+                    ("spring-summer", "весна-лето"),
+                    ("autumn-winter", "осень-зима"),
+                ],
+                default="summer",
+                max_length=16,
+                verbose_name="Сезон",
+            ),
         ),
         migrations.AddField(
-            model_name='products',
-            name='upper_material',
-            field=models.CharField(choices=[('leather', 'Натуральная кожа'), ('suede', 'Замша'), ('nubuck', 'Нубук'), ('textile', 'Текстиль'), ('mesh', 'Сетка (дышащий материал)'), ('synthetic', 'Искусственная кожа'), ('knit', 'Вязаный материал'), ('thermo', 'Термополиуретан (TPU)'), ('rubber', 'Резина/каучук'), ('pu', 'Полиуретан (PU)'), ('eva', 'Этиленвинилацетат (EVA)'), ('neoprene', 'Неопрен'), ('goretex', 'Мембрана Gore-Tex'), ('elastic', 'Эластичные материалы'), ('combination', 'Комбинированные материалы')], default='summer', max_length=16, verbose_name='Материал подошвы'),
+            model_name="products",
+            name="upper_material",
+            field=models.CharField(
+                choices=[
+                    ("leather", "Натуральная кожа"),
+                    ("suede", "Замша"),
+                    ("nubuck", "Нубук"),
+                    ("textile", "Текстиль"),
+                    ("mesh", "Сетка (дышащий материал)"),
+                    ("synthetic", "Искусственная кожа"),
+                    ("knit", "Вязаный материал"),
+                    ("thermo", "Термополиуретан (TPU)"),
+                    ("rubber", "Резина/каучук"),
+                    ("pu", "Полиуретан (PU)"),
+                    ("eva", "Этиленвинилацетат (EVA)"),
+                    ("neoprene", "Неопрен"),
+                    ("goretex", "Мембрана Gore-Tex"),
+                    ("elastic", "Эластичные материалы"),
+                    ("combination", "Комбинированные материалы"),
+                ],
+                default="summer",
+                max_length=16,
+                verbose_name="Материал подошвы",
+            ),
         ),
         migrations.AddField(
-            model_name='products',
-            name='weight',
+            model_name="products",
+            name="weight",
             field=models.SmallIntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='products',
-            name='country',
-            field=models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='products', to='products.country'),
+            model_name="products",
+            name="country",
+            field=models.ForeignKey(
+                blank=True,
+                default=None,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="products",
+                to="products.country",
+            ),
         ),
     ]

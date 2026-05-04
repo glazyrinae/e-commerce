@@ -4,14 +4,16 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('products', '0006_colors_sizes_store'),
+        ("products", "0006_colors_sizes_store"),
     ]
 
     operations = [
         migrations.AddConstraint(
-            model_name='store',
-            constraint=models.UniqueConstraint(fields=('color', 'size', 'product'), name='unique_variant_color_size_product'),
+            model_name="store",
+            constraint=models.UniqueConstraint(
+                fields=("color", "size", "product"),
+                name="unique_variant_color_size_product",
+            ),
         ),
     ]

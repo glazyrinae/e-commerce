@@ -2,6 +2,12 @@
   if (window.__quickViewSubmitInit) return;
   window.__quickViewSubmitInit = true;
 
+  const cartUtils = window.ECommerceCartUtils;
+  if (!cartUtils) {
+    console.error("base_quick_view.js requires cart_common.js");
+    return;
+  }
+
   const modalReturnFocus = new WeakMap();
 
   const isFocusable = (el) =>
@@ -92,24 +98,6 @@
     return sizesByColor;
   };
 
-  const getVariantCnt = (variantsEl, color, size) => {
-    if (!variantsEl || !color || !size) return 0;
-    const match = Array.from(variantsEl.querySelectorAll("span[data-cnt]")).find((el) => {
-      return String((el.dataset.color || "").trim()) === String(color).trim()
-        && String((el.dataset.size || "").trim()) === String(size).trim();
-    });
-    return match ? (Number.parseInt(match.dataset.cnt || "0", 10) || 0) : 0;
-  };
-
-  const isVariantInBasket = (variantsEl, color, size) => {
-    if (!variantsEl || !color || !size) return false;
-    const match = Array.from(variantsEl.querySelectorAll("span[data-cnt]")).find((el) => {
-      return String((el.dataset.color || "").trim()) === String(color).trim()
-        && String((el.dataset.size || "").trim()) === String(size).trim();
-    });
-    return !!match && String(match.dataset.inBasket || "0") === "1";
-  };
-
   const setFirstEnabledChecked = (inputs) => {
     const firstEnabled = inputs.find((i) => !i.disabled);
     if (firstEnabled) firstEnabled.checked = true;
@@ -187,8 +175,8 @@
 
     const color = (form.querySelector('[data-qv-colors] input[type="radio"]:checked') || {}).value || "";
     const size = (form.querySelector('[data-qv-sizes] input[type="radio"]:checked') || {}).value || "";
-    const maxQty = getVariantCnt(variantsEl, color, size);
-    const inBasket = isVariantInBasket(variantsEl, color, size);
+    const maxQty = cartUtils.getVariantCnt(variantsEl, color, size);
+    const inBasket = cartUtils.isVariantInBasket(variantsEl, color, size);
 
     if (maxQty > 0) {
       qtyInput.max = String(maxQty);
@@ -214,27 +202,7 @@
 
   const showStockMsg = (form, text) => {
     const el = form.querySelector("[data-qv-stock-msg]");
-    if (!el) return;
-    el.textContent = text;
-    el.style.display = "";
-    window.clearTimeout(el.__qvTimer);
-    el.__qvTimer = window.setTimeout(() => {
-      el.style.display = "none";
-      el.textContent = "";
-    }, 1800);
-  };
-
-  const getCsrfToken = (form) => {
-    const el = form.querySelector('input[name="csrfmiddlewaretoken"]');
-    return el ? el.value : "";
-  };
-
-  const setHeaderCartCount = (count) => {
-    const badge = document.querySelector(".cart-count");
-    if (!badge) return;
-    const parsed = Number.parseInt(String(count), 10);
-    if (!Number.isFinite(parsed) || parsed < 0) return;
-    badge.textContent = String(parsed);
+    cartUtils.showTimedMessage(el, text, { timerKey: "__qvTimer" });
   };
 
   const initForm = (form) => {
@@ -252,8 +220,6 @@
     const sizesByColor = buildSizesByColorMap(pairs);
 
     const colorInputs = Array.from(form.querySelectorAll('[data-qv-colors] input[type="radio"]'));
-    const sizeInputs = Array.from(form.querySelectorAll('[data-qv-sizes] input[type="radio"]'));
-
     if (!form.querySelector('[data-qv-colors] input[type="radio"]:checked')) {
       setFirstEnabledChecked(colorInputs);
     }
@@ -313,8 +279,8 @@
       const size = (form.querySelector('input[name="size"]') || {}).value || "";
       const quantity = Number.parseInt(((form.querySelector('input[name="quantity"]') || {}).value || "1"), 10) || 1;
       const variantsEl = form.querySelector("[data-qv-variants]");
-      const maxQty = getVariantCnt(variantsEl, color, size);
-      const inBasket = isVariantInBasket(variantsEl, color, size);
+      const maxQty = cartUtils.getVariantCnt(variantsEl, color, size);
+      const inBasket = cartUtils.isVariantInBasket(variantsEl, color, size);
 
       if (!productId || !color || !size) {
         showStockMsg(form, "Выберите цвет и размер.");
@@ -333,7 +299,10 @@
         return;
       }
 
-      const csrf = getCsrfToken(form);
+      const csrf = cartUtils.getCsrfToken({
+        form,
+        hiddenInputSelector: 'input[name="csrfmiddlewaretoken"]',
+      });
       const submitBtn = form.querySelector("[data-qv-submit]");
       if (submitBtn) submitBtn.disabled = true;
 
@@ -357,15 +326,10 @@
           throw new Error(data.error || `HTTP ${res.status}`);
         }
 
-        const selectedVariant = variantsEl
-          ? Array.from(variantsEl.querySelectorAll("span[data-cnt]")).find((el) => {
-            return String((el.dataset.color || "").trim()) === String(color).trim()
-              && String((el.dataset.size || "").trim()) === String(size).trim();
-          })
-          : null;
+        const selectedVariant = cartUtils.findVariantNode(variantsEl, color, size);
         if (selectedVariant) selectedVariant.dataset.inBasket = "1";
         if (submitBtn) submitBtn.textContent = data.button_text || "В корзине";
-        setHeaderCartCount(data.cart_total_items);
+        cartUtils.setHeaderCartCount(data.cart_total_items);
         showStockMsg(form, data.message || "Товар добавлен в корзину.");
       } catch (e) {
         console.error("QuickView /basket/cart error:", e);

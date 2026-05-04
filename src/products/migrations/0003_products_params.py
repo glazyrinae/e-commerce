@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('products', '0002_images_alter_categories_options_and_more'),
+        ("products", "0002_images_alter_categories_options_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='products',
-            name='params',
-            field=models.TextField(default=''),
+            model_name="products",
+            name="params",
+            field=models.TextField(default=""),
         ),
     ]

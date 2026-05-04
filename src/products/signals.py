@@ -1,4 +1,4 @@
-#Images = apps.get_model("products", "Images")
+# Images = apps.get_model("products", "Images")
 import logging
 import os
 from datetime import datetime
@@ -13,6 +13,7 @@ from PIL import Image
 from .models import Images
 
 logger = logging.getLogger(__name__)
+
 
 def rename_image(filename):
     # instance - объект модели

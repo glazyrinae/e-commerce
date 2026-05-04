@@ -1,6 +1,8 @@
-from .models import MenuItem, Settings
-from basket.models import Basket
 from django.db.models import Sum
+
+from basket.models import Basket
+
+from .models import MenuItem, Settings
 
 
 def site_settings(request):

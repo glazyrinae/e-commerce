@@ -5,34 +5,81 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('products', '0005_delete_brand_alter_products_country_and_more'),
+        ("products", "0005_delete_brand_alter_products_country_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Colors',
+            name="Colors",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=250, unique=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("title", models.CharField(max_length=250, unique=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Sizes',
+            name="Sizes",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('size', models.SmallIntegerField(unique=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("size", models.SmallIntegerField(unique=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Store',
+            name="Store",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('cnt', models.SmallIntegerField()),
-                ('color', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='store', to='products.colors')),
-                ('product', models.ForeignKey(default=None, on_delete=django.db.models.deletion.CASCADE, related_name='store', to='products.products')),
-                ('size', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='store', to='products.sizes')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("cnt", models.SmallIntegerField()),
+                (
+                    "color",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="store",
+                        to="products.colors",
+                    ),
+                ),
+                (
+                    "product",
+                    models.ForeignKey(
+                        default=None,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="store",
+                        to="products.products",
+                    ),
+                ),
+                (
+                    "size",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="store",
+                        to="products.sizes",
+                    ),
+                ),
             ],
         ),
     ]

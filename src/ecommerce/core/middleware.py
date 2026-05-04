@@ -5,12 +5,12 @@ class AnonymousRequiredMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
         self.allowed_paths = [
-            '/account/register/',
-            '/account/login/',
+            "/account/register/",
+            "/account/login/",
         ]
 
     def __call__(self, request):
         if request.user.is_authenticated and request.path in self.allowed_paths:
-            return redirect('/')
+            return redirect("/")
 
         return self.get_response(request)

@@ -31,9 +31,7 @@ def get_item(product: Products, request: HttpRequest) -> dict:
     return ProductPayloadBuilder(request).build(product)
 
 
-def get_products(
-    products: list[Products], request: HttpRequest
-) -> list[dict]:
+def get_products(products: list[Products], request: HttpRequest) -> list[dict]:
     return ProductPayloadBuilder(request).build_many(products)
 
 

@@ -24,6 +24,7 @@ def _env_bool(name: str, default: bool = False) -> bool:
     raw_value = env.str(name, str(default)).strip().lower()
     return raw_value in {"1", "true", "yes", "on", "debug", "dev", "development"}
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 

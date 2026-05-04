@@ -1,6 +1,7 @@
 import json
 import logging
 from decimal import Decimal
+from typing import cast
 
 from django.contrib.auth.decorators import login_required
 from django.db.models import IntegerField, OuterRef, Subquery, Value
@@ -15,11 +16,12 @@ from products.models import Colors, Products, Sizes, Store
 
 logger = logging.getLogger(__name__)
 
+
 def _get_effective_price(product: Products) -> Decimal:
     if product.discount_price is not None:
-        return product.discount_price
+        return cast(Decimal, product.discount_price)
     if product.price is not None:
-        return product.price
+        return cast(Decimal, product.price)
     return Decimal("0")
 
 
@@ -171,18 +173,27 @@ def basket(request: HttpRequest) -> HttpResponse:
 
 
 def cart(request, product_id):
-    if request.method != "POST" or request.headers.get("x-requested-with") != "XMLHttpRequest":
-        return JsonResponse({"success": False, "error": "Метод не поддерживается"}, status=405)
+    if (
+        request.method != "POST"
+        or request.headers.get("x-requested-with") != "XMLHttpRequest"
+    ):
+        return JsonResponse(
+            {"success": False, "error": "Метод не поддерживается"}, status=405
+        )
 
     try:
         payload = json.loads(request.body or "{}")
     except json.JSONDecodeError:
-        return JsonResponse({"success": False, "error": "Некорректный JSON"}, status=400)
+        return JsonResponse(
+            {"success": False, "error": "Некорректный JSON"}, status=400
+        )
 
     try:
         requested_qty = int(payload.get("quantity", 1))
     except (TypeError, ValueError):
-        return JsonResponse({"success": False, "error": "quantity должен быть числом"}, status=400)
+        return JsonResponse(
+            {"success": False, "error": "quantity должен быть числом"}, status=400
+        )
     requested_qty = max(1, requested_qty)
     product = get_object_or_404(Products, id=product_id)
 
@@ -209,7 +220,9 @@ def cart(request, product_id):
             request.session.setdefault("cart", {}).update(cart_preview)
 
         request.session.modified = True
-        return JsonResponse(session_cart.get(product_id_str, cart_preview[product_id_str]))
+        return JsonResponse(
+            session_cart.get(product_id_str, cart_preview[product_id_str])
+        )
 
     if not request.user.is_authenticated:
         login_url = f"{reverse('login')}?next={request.path}"
@@ -229,7 +242,9 @@ def cart(request, product_id):
     try:
         size_int = int(size_value_raw)
     except (TypeError, ValueError):
-        return JsonResponse({"success": False, "error": "Размер должен быть числом"}, status=400)
+        return JsonResponse(
+            {"success": False, "error": "Размер должен быть числом"}, status=400
+        )
 
     size = Sizes.objects.filter(size=size_int).first()
     if size is None:
@@ -242,7 +257,9 @@ def cart(request, product_id):
     )
     stock_cnt = int(store_item["cnt"]) if store_item else 0
     if stock_cnt <= 0:
-        return JsonResponse({"success": False, "error": "Этого варианта нет в наличии"}, status=409)
+        return JsonResponse(
+            {"success": False, "error": "Этого варианта нет в наличии"}, status=409
+        )
 
     capped = False
     item, created = Basket.objects.get_or_create(

@@ -6,7 +6,7 @@
 
   if (!cartUtils || !formState) {
     console.error(
-      "quick_view/form_submitter.js requires cart_common.js and quick_view/form_state.js",
+      "quick_view/form_submitter.js requires shared/cart_common.js and quick_view/form_state.js",
     );
     return;
   }

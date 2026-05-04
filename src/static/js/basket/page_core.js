@@ -1,7 +1,7 @@
 (() => {
   const cartUtils = window.ECommerceCartUtils;
   if (!cartUtils) {
-    console.error("basket_page_core.js requires cart_common.js");
+    console.error("basket/page_core.js requires shared/cart_common.js");
     return;
   }
 

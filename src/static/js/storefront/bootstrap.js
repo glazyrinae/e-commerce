@@ -1,7 +1,7 @@
 (() => {
   const $ = window.jQuery;
   if (!$) {
-    console.error("script.js requires jQuery");
+    console.error("storefront/bootstrap.js requires jQuery");
     return;
   }
 
@@ -9,7 +9,9 @@
   const swipers = window.ECommerceStorefrontSwipers;
 
   if (!effects && !swipers) {
-    console.error("script.js requires storefront/effects.js or storefront/swipers.js");
+    console.error(
+      "storefront/bootstrap.js requires storefront/effects.js or storefront/swipers.js",
+    );
     return;
   }
 

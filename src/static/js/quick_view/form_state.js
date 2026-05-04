@@ -3,7 +3,7 @@
 
   const cartUtils = window.ECommerceCartUtils;
   if (!cartUtils) {
-    console.error("quick_view/form_state.js requires cart_common.js");
+    console.error("quick_view/form_state.js requires shared/cart_common.js");
     return;
   }
 

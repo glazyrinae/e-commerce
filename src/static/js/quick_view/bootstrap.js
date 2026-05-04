@@ -7,7 +7,7 @@
 
   if (!modalFocus || !formController) {
     console.error(
-      "base_quick_view.js requires quick_view/modal_focus.js and quick_view/form_controller.js",
+      "quick_view/bootstrap.js requires quick_view/modal_focus.js and quick_view/form_controller.js",
     );
     return;
   }
